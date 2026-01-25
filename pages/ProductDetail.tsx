@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, ShieldCheck, Truck, ExternalLink, ArrowLeft, MessageSquare, User, CheckCircle2, X, Loader2 } from 'lucide-react';
@@ -10,7 +11,6 @@ const ProductDetail: React.FC = () => {
   const { products, addProductReview } = useProducts();
   const { user, isAuthenticated } = useAuth();
   
-  // Feedback States
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
@@ -20,9 +20,12 @@ const ProductDetail: React.FC = () => {
 
   if (!product) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="text-2xl font-bold mb-4">Produto não encontrado</h2>
-        <button onClick={() => navigate('/')} className="text-amber-600 font-bold underline">Voltar para a home</button>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+        <h2 className="text-2xl font-bold mb-4">Produto fora de voo...</h2>
+        <button onClick={() => navigate('/')} className="text-amber-600 font-black flex items-center space-x-2">
+          <ArrowLeft size={18} />
+          <span>Voltar para a Vitrine</span>
+        </button>
       </div>
     );
   }
@@ -49,43 +52,43 @@ const ProductDetail: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
       <button 
         onClick={() => navigate(-1)}
-        className="mb-8 flex items-center space-x-2 text-gray-500 hover:text-amber-600 font-bold transition-colors"
+        className="mb-6 md:mb-8 flex items-center space-x-2 text-gray-400 hover:text-amber-600 font-bold transition-colors"
       >
         <ArrowLeft size={18} />
-        <span>Voltar</span>
+        <span className="text-sm">Voltar</span>
       </button>
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
-        {/* Left Column: Image & Feedback Area */}
-        <div className="space-y-8">
-          <div className="aspect-square overflow-hidden rounded-[2.5rem] bg-gray-100 shadow-sm border border-gray-100">
+        {/* Imagem Principal */}
+        <div className="space-y-6 md:space-y-8">
+          <div className="aspect-square overflow-hidden rounded-[2rem] md:rounded-[2.5rem] bg-gray-100 shadow-sm border border-gray-100">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
           </div>
 
-          {/* Feedback Section - The "White Box" Area */}
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
+          {/* Seção de Feedback (Otimizada Mobile) */}
+          <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 p-6 md:p-8 shadow-sm">
+            <div className="flex items-center justify-between mb-6 md:mb-8">
               <div className="flex items-center space-x-3">
-                <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
-                  <MessageSquare size={20} />
+                <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
+                  <MessageSquare size={18} />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 tracking-tight">Feedback</h3>
+                <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">Avaliações</h3>
               </div>
               <button 
                 onClick={() => isAuthenticated ? setShowReviewForm(!showReviewForm) : navigate('/login')}
-                className="text-xs font-black text-amber-600 uppercase tracking-widest hover:text-amber-700"
+                className="text-[10px] font-black text-amber-600 uppercase tracking-widest hover:text-amber-700"
               >
-                {showReviewForm ? 'Fechar' : 'Avaliar'}
+                {showReviewForm ? 'Cancelar' : 'Avaliar'}
               </button>
             </div>
 
             {showReviewForm ? (
-              <form onSubmit={handleReviewSubmit} className="space-y-6 animate-zoom-in">
-                <div className="bg-gray-50 p-6 rounded-[2rem] border border-gray-100">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Sua nota:</p>
+              <form onSubmit={handleReviewSubmit} className="space-y-5 animate-zoom-in">
+                <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">Qual sua nota?</p>
                   <div className="flex space-x-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -94,66 +97,57 @@ const ProductDetail: React.FC = () => {
                         onClick={() => setNewRating(star)}
                         className={`transition-all transform hover:scale-110 ${star <= newRating ? 'text-amber-400' : 'text-gray-200'}`}
                       >
-                        <Star size={24} fill={star <= newRating ? 'currentColor' : 'none'} />
+                        <Star size={22} fill={star <= newRating ? 'currentColor' : 'none'} />
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="O que você achou deste item?"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium resize-none"
-                  />
-                </div>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Conte-nos o que achou..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium resize-none"
+                />
 
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center space-x-2 hover:bg-black transition-all shadow-xl shadow-gray-200"
+                  className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center space-x-2 shadow-xl shadow-gray-100"
                 >
-                  {submittingReview ? <Loader2 className="animate-spin" size={18} /> : <span>Publicar Feedback</span>}
+                  {submittingReview ? <Loader2 className="animate-spin" size={18} /> : <span>Enviar Avaliação</span>}
                 </button>
               </form>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {product.reviewsList && product.reviewsList.length > 0 ? (
-                  <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-5 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                     {product.reviewsList.map((review) => (
-                      <div key={review.id} className="border-b border-gray-50 pb-6 last:border-0 last:pb-0">
+                      <div key={review.id} className="border-b border-gray-50 pb-5 last:border-0 last:pb-0">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-black text-gray-400 border border-gray-200">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center text-[10px] font-black text-amber-600">
                               {review.userName.charAt(0)}
                             </div>
-                            <span className="text-sm font-bold text-gray-900">{review.userName}</span>
+                            <span className="text-xs font-bold text-gray-900">{review.userName}</span>
                           </div>
                           <div className="flex text-amber-400">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} size={10} fill={i < review.rating ? 'currentColor' : 'none'} />
+                              <Star key={i} size={8} fill={i < review.rating ? 'currentColor' : 'none'} />
                             ))}
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 leading-relaxed font-medium pl-11">
+                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium pl-9">
                           {review.comment}
-                        </p>
-                        <p className="text-[10px] text-gray-300 font-bold mt-2 pl-11 uppercase tracking-widest">
-                          {new Date(review.date).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-10">
-                    <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                      <MessageSquare size={24} />
-                    </div>
-                    <p className="text-sm text-gray-400 font-bold">Nenhum feedback ainda.</p>
-                    <p className="text-[10px] text-gray-300 font-bold uppercase tracking-widest mt-1">Seja o primeiro a avaliar!</p>
+                  <div className="text-center py-6">
+                    <p className="text-xs text-gray-400 font-bold italic">Sem avaliações por enquanto...</p>
                   </div>
                 )}
               </div>
@@ -161,47 +155,46 @@ const ProductDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Info */}
+        {/* Informações e Compra */}
         <div className="mt-10 lg:mt-0">
-          <div className="mb-2">
-            <span className="text-amber-600 font-black tracking-wider uppercase text-xs bg-amber-50 px-3 py-1 rounded-full border border-amber-100">{product.category}</span>
+          <div className="mb-3">
+            <span className="text-amber-600 font-black tracking-widest uppercase text-[10px] bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100">{product.category}</span>
           </div>
-          <h1 className="text-4xl font-black text-gray-900 mb-4">{product.name}</h1>
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight leading-tight">{product.name}</h1>
           
-          <div className="flex items-center space-x-4 mb-6">
+          <div className="flex items-center space-x-4 mb-8">
             <div className="flex items-center text-amber-500">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} size={18} fill={i < Math.floor(product.rating) ? "currentColor" : "none"} />
+                <Star key={i} size={16} fill={i < Math.floor(product.rating) ? "currentColor" : "none"} />
               ))}
             </div>
-            <span className="text-gray-500 text-sm font-bold">({product.reviews} avaliações)</span>
+            <span className="text-gray-400 text-xs font-bold">({product.reviews} feedbacks)</span>
           </div>
 
           <div className="mb-8">
-            <p className="text-sm text-gray-400 font-bold mb-1 uppercase tracking-widest">Melhor preço hoje</p>
-            <span className="text-4xl font-black text-gray-900">
+            <span className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] block mb-1">Preço Hoje</span>
+            <span className="text-4xl md:text-5xl font-black text-gray-900">
               R$ {product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </div>
 
-          <p className="text-gray-500 text-lg mb-8 leading-relaxed font-medium">{product.description}</p>
+          <p className="text-gray-500 text-base md:text-lg mb-10 leading-relaxed font-medium">{product.description}</p>
 
-          {/* Buying Links */}
-          <div className="space-y-4 mb-12">
-            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-2">Onde comprar:</h3>
+          <div className="space-y-4 mb-10">
+            <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-2">Compre com Segurança:</h3>
             
             {product.mlUrl && (
               <a 
                 href={product.mlUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-full bg-[#FFF159] text-gray-900 px-8 py-4 rounded-2xl font-black hover:brightness-95 transition-all shadow-md flex items-center justify-between group"
+                className="w-full bg-[#FFF159] text-gray-900 px-8 py-4.5 rounded-2xl font-black hover:brightness-95 transition-all shadow-md flex items-center justify-between group"
               >
                 <div className="flex items-center space-x-3">
-                  <span className="bg-white p-1 rounded-lg">📦</span>
-                  <span>Ver no Mercado Livre</span>
+                  <span className="bg-white p-1 rounded-lg text-lg">📦</span>
+                  <span className="text-sm">Ver no Mercado Livre</span>
                 </div>
-                <ExternalLink size={20} className="group-hover:translate-x-1 transition-transform" />
+                <ExternalLink size={18} className="group-hover:translate-x-1 transition-transform" />
               </a>
             )}
 
@@ -210,31 +203,25 @@ const ProductDetail: React.FC = () => {
                 href={product.shopeeUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-full bg-[#EE4D2D] text-white px-8 py-4 rounded-2xl font-black hover:brightness-95 transition-all shadow-md flex items-center justify-between group"
+                className="w-full bg-[#EE4D2D] text-white px-8 py-4.5 rounded-2xl font-black hover:brightness-95 transition-all shadow-md flex items-center justify-between group"
               >
                 <div className="flex items-center space-x-3">
-                  <span className="bg-white/20 p-1 rounded-lg">🛍️</span>
-                  <span>Ver na Shopee</span>
+                  <span className="bg-white/20 p-1 rounded-lg text-lg">🛍️</span>
+                  <span className="text-sm">Ver na Shopee</span>
                 </div>
-                <ExternalLink size={20} className="group-hover:translate-x-1 transition-transform" />
+                <ExternalLink size={18} className="group-hover:translate-x-1 transition-transform" />
               </a>
-            )}
-
-            {!product.mlUrl && !product.shopeeUrl && (
-              <div className="p-4 bg-gray-100 rounded-xl text-center text-gray-500 font-bold italic">
-                Aguardando links de venda...
-              </div>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-12">
             <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-              <Truck size={20} className="text-amber-600" />
-              <span className="text-xs font-bold text-gray-700">Verifique prazos no link oficial</span>
+              <Truck size={18} className="text-amber-500" />
+              <span className="text-[10px] font-bold text-gray-600 uppercase">Frete conforme loja oficial</span>
             </div>
             <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-              <ShieldCheck size={20} className="text-amber-600" />
-              <span className="text-xs font-bold text-gray-700">Link 100% verificado pela Blee</span>
+              <ShieldCheck size={18} className="text-amber-500" />
+              <span className="text-[10px] font-bold text-gray-600 uppercase">Link 100% verificado</span>
             </div>
           </div>
         </div>
