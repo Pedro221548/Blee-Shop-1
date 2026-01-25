@@ -12,6 +12,7 @@ import UserDashboard from './pages/UserDashboard';
 import InfoPage from './pages/InfoPage';
 import CustomOrderLanding from './pages/CustomOrderLanding';
 import ProductsGallery from './pages/ProductsGallery';
+import SimulatorPage from './pages/SimulatorPage';
 import { ProductProvider, useProducts } from './ProductContext';
 import { AuthProvider, useAuth } from './AuthContext';
 import { CartProvider } from './CartContext';
@@ -45,6 +46,7 @@ const AppContent: React.FC = () => {
           <Route path="/info/:tab" element={<InfoPage />} />
           <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path="/produtos" element={<ProductsGallery />} />
+          <Route path="/simulador" element={<SimulatorPage />} />
           <Route path="/admin" element={
             <ProtectedRoute adminOnly>
               <AdminPage />

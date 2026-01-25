@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box } from 'lucide-react';
+import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box, Eye } from 'lucide-react';
 import BeeLogo from './BeeLogo';
 import { useAuth } from '../AuthContext';
 import { useCart } from '../CartContext';
@@ -32,11 +32,9 @@ const Navbar: React.FC = () => {
     }
   }, [isSearchOpen]);
 
-  // Bloquear scroll do body quando o menu mobile ou busca estiverem abertos
   useEffect(() => {
     if (isSearchOpen || isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.paddingRight = '0px'; // Prevenir pulo de layout se houver scrollbar
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -57,7 +55,6 @@ const Navbar: React.FC = () => {
     setSearchQuery('');
   };
 
-  // Funções de navegação para fechar menus
   const navigateAndClose = (path: string) => {
     navigate(path);
     setIsMobileMenuOpen(false);
@@ -82,6 +79,10 @@ const Navbar: React.FC = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Início</Link>
+            <Link to="/simulador" className="text-gray-600 hover:text-amber-600 font-bold transition-colors flex items-center gap-1">
+              <Eye size={16} className="text-amber-500" />
+              <span>Simulador</span>
+            </Link>
             <Link to="/dashboard" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Encomendas 3D</Link>
             <Link to="/produtos" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Portifólio</Link>
             {isResponsible && (
@@ -167,99 +168,107 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Portal para o Menu Mobile - Isso garante que ele fique sobre TUDO */}
+      {/* Portal para o Menu Mobile - Correção definitiva de z-index e visibilidade */}
       {isMobileMenuOpen && createPortal(
-        <div className="fixed inset-0 z-[99999] md:hidden overflow-hidden">
+        <div className="fixed inset-0 z-[10000] md:hidden">
           {/* Backdrop Escuro Sólido */}
           <div 
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" 
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           
-          {/* Conteúdo do Drawer (Menu) */}
-          <div className="absolute inset-y-0 right-0 w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300">
+          {/* Menu Panel - Garantindo h-screen e fundo branco sólido */}
+          <div className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col z-[10001] animate-slide-in-right overflow-hidden">
             
             {/* Header do Menu */}
-            <div className="h-20 flex items-center justify-between px-8 border-b border-gray-100 bg-white shrink-0">
+            <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 bg-white shrink-0">
               <div className="flex items-center space-x-2">
                 <BeeLogo size={24} />
-                <span className="text-lg font-black text-gray-900 tracking-tight uppercase">Navegação</span>
+                <span className="text-sm font-black text-gray-900 uppercase tracking-widest">Navegação</span>
               </div>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 text-gray-400 hover:text-amber-500 bg-gray-50 rounded-2xl transition-all"
+                className="p-2.5 text-gray-400 hover:text-amber-500 bg-gray-50 rounded-xl transition-all"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            {/* Links da Lista */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-white">
+            {/* Links da Lista - bg-white sólido para evitar transparência */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-white">
               <button 
                 onClick={() => navigateAndClose('/')}
-                className="w-full flex items-center space-x-4 p-5 rounded-3xl bg-amber-50 text-amber-900 font-black border border-amber-100 text-left"
+                className="w-full flex items-center space-x-4 p-4 rounded-2xl bg-amber-50 text-amber-900 font-black border border-amber-100 text-left"
               >
-                <Home size={22} />
-                <span className="text-base">Início</span>
+                <Home size={20} />
+                <span className="text-sm">Início</span>
+              </button>
+
+              <button 
+                onClick={() => navigateAndClose('/simulador')}
+                className="w-full flex items-center space-x-4 p-4 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
+              >
+                <Eye size={20} className="text-amber-500" />
+                <span className="text-sm">Simulador BeeView</span>
               </button>
               
               <button 
                 onClick={() => navigateAndClose('/dashboard')}
-                className="w-full flex items-center space-x-4 p-5 rounded-3xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
+                className="w-full flex items-center space-x-4 p-4 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
               >
-                <Box size={22} className="text-amber-500" />
-                <span className="text-base">Encomendas 3D</span>
+                <Box size={20} className="text-amber-500" />
+                <span className="text-sm">Encomendas 3D</span>
               </button>
 
               <button 
                 onClick={() => navigateAndClose('/produtos')}
-                className="w-full flex items-center space-x-4 p-5 rounded-3xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
+                className="w-full flex items-center space-x-4 p-4 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
               >
-                <Image size={22} className="text-amber-500" />
-                <span className="text-base">Portifólio</span>
+                <Image size={20} className="text-amber-500" />
+                <span className="text-sm">Portifólio</span>
               </button>
 
               {isResponsible && (
-                <div className="pt-8 mt-8 border-t border-gray-100">
-                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-4 px-2">Administração</p>
+                <div className="pt-6 mt-6 border-t border-gray-50">
+                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-3 px-2">Gestão</p>
                   <button 
                     onClick={() => navigateAndClose('/admin')}
-                    className="w-full flex items-center space-x-4 p-5 rounded-3xl bg-gray-900 text-white font-black shadow-xl"
+                    className="w-full flex items-center space-x-4 p-4 rounded-2xl bg-gray-900 text-white font-black shadow-lg"
                   >
-                    <Settings size={22} className="text-amber-400" />
-                    <span className="text-base">Painel Gestão</span>
+                    <Settings size={20} className="text-amber-400" />
+                    <span className="text-sm">Painel Dono</span>
                   </button>
                 </div>
               )}
             </div>
 
             {/* Rodapé do Menu (Usuário) */}
-            <div className="p-8 border-t border-gray-100 bg-gray-50 shrink-0">
+            <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0">
               {isAuthenticated ? (
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-4 bg-white p-5 rounded-[2rem] border border-gray-200/50 shadow-sm">
-                    <div className="w-12 h-12 bg-amber-400 rounded-2xl flex items-center justify-center text-white font-black text-xl shrink-0">
+                  <div className="flex items-center space-x-3 bg-white p-4 rounded-2xl border border-gray-200/50 shadow-sm">
+                    <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-white font-black text-base shrink-0">
                       {user?.name.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-black text-gray-900 text-sm truncate">{user?.name}</p>
-                      <p className="text-[10px] text-amber-600 font-black uppercase tracking-widest mt-0.5">Conta Ativa</p>
+                      <p className="font-black text-gray-900 text-xs truncate">{user?.name}</p>
+                      <p className="text-[9px] text-amber-600 font-black uppercase tracking-widest mt-0.5">Conta Ativa</p>
                     </div>
                   </div>
                   <button 
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center space-x-3 py-5 bg-red-50 text-red-500 rounded-3xl font-black text-sm hover:bg-red-100 transition-all border border-red-100/50"
+                    className="w-full flex items-center justify-center space-x-2 py-3.5 bg-red-50 text-red-500 rounded-2xl font-black text-[11px] hover:bg-red-100 transition-all border border-red-100/30"
                   >
-                    <LogOut size={20} />
+                    <LogOut size={16} />
                     <span>Desconectar</span>
                   </button>
                 </div>
               ) : (
                 <button 
                   onClick={() => navigateAndClose('/login')}
-                  className="w-full flex items-center justify-center space-x-4 py-5 bg-gray-900 text-white rounded-3xl font-black text-base shadow-2xl shadow-gray-300"
+                  className="w-full flex items-center justify-center space-x-3 py-4 bg-gray-900 text-white rounded-2xl font-black text-xs shadow-xl"
                 >
-                  <User size={22} />
+                  <User size={18} />
                   <span>Entrar na Loja</span>
                 </button>
               )}
@@ -269,11 +278,10 @@ const Navbar: React.FC = () => {
         document.body
       )}
 
-      {/* Portal para Busca (Search Overlay) */}
+      {/* Overlay de Busca */}
       {isSearchOpen && createPortal(
-        <div className="fixed inset-0 z-[100000] bg-white animate-in fade-in duration-300 overflow-y-auto">
+        <div className="fixed inset-0 z-[20000] bg-white animate-fade-in overflow-y-auto">
           <div className="max-w-4xl mx-auto px-6 pt-10 md:pt-24 pb-20">
-            {/* Header da Busca */}
             <div className="flex items-center justify-between mb-12">
               <div className="flex items-center space-x-4 md:space-x-6 flex-1">
                 <Search className="text-amber-500 shrink-0" size={32} />
@@ -295,11 +303,10 @@ const Navbar: React.FC = () => {
               </button>
             </div>
 
-            {/* Resultados da Busca */}
             <div className="space-y-10">
               {searchQuery ? (
-                <div className="animate-in slide-in-from-top-4 duration-500">
-                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6 border-b border-gray-50 pb-4">Encontramos para você</p>
+                <div className="animate-zoom-in">
+                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6 border-b border-gray-50 pb-4">Resultados</p>
                   
                   {filteredResults.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4">
@@ -322,18 +329,15 @@ const Navbar: React.FC = () => {
                     </div>
                   ) : (
                     <div className="py-24 text-center">
-                      <div className="bg-amber-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Search size={32} className="text-amber-200" />
-                      </div>
-                      <p className="text-xl text-gray-300 font-black italic">Puxa! Nenhum rastro de mel por aqui...</p>
+                      <p className="text-xl text-gray-300 font-black italic">Nenhum rastro de mel por aqui...</p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="animate-in fade-in duration-700">
-                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-8">Categorias em Alta</p>
+                <div className="animate-fade-in">
+                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-8">Categorias</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {['Impressão 3D', 'Canecas', 'Curadoria Tech', 'Acessórios'].map(cat => (
+                    {['Impressão 3D', 'Canecas', 'Acessórios'].map(cat => (
                       <button 
                         key={cat}
                         onClick={() => setSearchQuery(cat)}
