@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Início</Link>
             <Link to="/dashboard" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Encomendas 3D</Link>
-            <Link to="/produtos" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Galeria</Link>
+            <Link to="/produtos" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Portifólio</Link>
             {isResponsible && (
               <Link to="/admin" className="text-amber-600 hover:text-amber-700 font-black flex items-center space-x-1">
                 <Settings size={16} />
@@ -176,7 +176,7 @@ const Navbar: React.FC = () => {
               </Link>
               <Link to="/produtos" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-gray-50 text-gray-600 font-bold">
                 <Image size={20} className="text-amber-500" />
-                <span>Galeria Portfólio</span>
+                <span>Portifólio</span>
               </Link>
               {isResponsible && (
                 <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-amber-50 text-amber-600 font-black">

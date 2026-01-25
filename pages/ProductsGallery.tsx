@@ -40,7 +40,7 @@ const ProductsGallery: React.FC = () => {
       <section className="bg-white py-20 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-black bg-amber-400 text-gray-900 uppercase tracking-widest mb-6 shadow-sm">
-            <Camera size={14} className="mr-2" /> Portfólio de Criação
+            <Camera size={14} className="mr-2" /> Portifólio de Criação
           </div>
           <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter mb-6">
             Trabalhos <span className="text-amber-500">Recentes.</span>
@@ -139,7 +139,7 @@ const ProductsGallery: React.FC = () => {
           to="/dashboard" 
           className="text-amber-600 font-black text-xl hover:text-amber-700 underline underline-offset-8 decoration-amber-200 hover:decoration-amber-500 transition-all"
         >
-          Peça seu orçamento agora
+          Peça seu portifólio agora
         </Link>
       </section>
     </div>
