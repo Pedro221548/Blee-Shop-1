@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Blee Shop",
+  "description": "Sua loja moderna de tecnologia e estilo com o toque da abelha. Entregas rápidas e assistência por AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
