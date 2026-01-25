@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Previne erro de "process is not defined" que causa a tela branca
+        window.process = window.process || { env: {} };
+    </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .glass-effect {
@@ -58,5 +62,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 overflow-x-hidden">
     <div id="root"></div>
+    <!-- Script principal para iniciar a aplicação React -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+
 export interface Review {
   id: string;
   userName: string;
@@ -60,20 +61,13 @@ export interface ProductContextType {
   products: Product[];
   orders: CustomOrder[];
   settings: StoreSettings;
-
   updateProduct: (updatedProduct: Product) => void;
   addProduct: (newProduct: Omit<Product, 'id' | 'rating' | 'reviews'>) => void;
   deleteProduct: (id: number) => void;
   resetProducts: () => void;
-
   updateSettings: (newSettings: StoreSettings) => void;
-
   addOrder: (order: Omit<CustomOrder, 'id' | 'status' | 'createdAt'>) => void;
   updateOrderStatus: (orderId: string, status: CustomOrder['status']) => void;
   deleteOrder: (orderId: string) => void;
-
-  addProductReview: (
-    productId: number,
-    review: Omit<Review, 'id' | 'date'>
-  ) => void;
+  addProductReview: (productId: number, review: Omit<Review, 'id' | 'date'>) => void;
 }

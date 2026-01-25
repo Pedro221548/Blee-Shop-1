@@ -28,16 +28,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [user, setUser] = useState<User | null>(null);
-const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<number[]>(() => {
+    const saved = localStorage.getItem('blee-favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
 
-useEffect(() => {
-  const savedUser = localStorage.getItem('blee-user');
-  if (savedUser) setUser(JSON.parse(savedUser));
-
-  const savedFav = localStorage.getItem('blee-favorites');
-  if (savedFav) setFavorites(JSON.parse(savedFav));
-}, []);
+  useEffect(() => {
+    localStorage.setItem('blee-favorites', JSON.stringify(favorites));
+  }, [favorites]);
 
   const login = (email: string, role: UserRole) => {
     const name = email.split('@')[0];
