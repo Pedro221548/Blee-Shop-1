@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box } from 'lucide-react';
 import BeeLogo from './BeeLogo';
@@ -27,7 +28,7 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
+      setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [isSearchOpen]);
 
@@ -35,9 +36,13 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     if (isSearchOpen || isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = '0px'; // Prevenir pulo de layout se houver scrollbar
     } else {
       document.body.style.overflow = 'unset';
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isSearchOpen, isMobileMenuOpen]);
 
   const filteredResults = searchQuery.trim() === '' 
@@ -52,10 +57,17 @@ const Navbar: React.FC = () => {
     setSearchQuery('');
   };
 
+  // Funções de navegação para fechar menus
+  const navigateAndClose = (path: string) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
+    setIsSearchOpen(false);
+  };
+
   return (
-    <nav className="sticky top-0 z-50 glass-effect border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
+    <nav className="sticky top-0 z-[60] glass-effect border-b border-gray-100 h-16 md:h-20 flex items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex justify-between items-center h-full">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2 group">
               <div className="bg-amber-400 p-1.5 rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
@@ -155,141 +167,189 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Menu Mobile Lateral (Drawer) */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] md:hidden">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="fixed inset-y-0 right-0 w-[80%] max-w-xs bg-white shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col">
-            <div className="p-6 flex items-center justify-between border-b border-gray-50">
-              <span className="text-xl font-black text-gray-900">Navegação</span>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-50 rounded-xl text-gray-400"><X size={20} /></button>
-            </div>
+      {/* Portal para o Menu Mobile - Isso garante que ele fique sobre TUDO */}
+      {isMobileMenuOpen && createPortal(
+        <div className="fixed inset-0 z-[99999] md:hidden overflow-hidden">
+          {/* Backdrop Escuro Sólido */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
+          
+          {/* Conteúdo do Drawer (Menu) */}
+          <div className="absolute inset-y-0 right-0 w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300">
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-2">
-              <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 rounded-2xl bg-gray-50 text-gray-900 font-bold">
-                <Home size={20} className="text-amber-500" />
-                <span>Início</span>
-              </Link>
-              <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-gray-50 text-gray-600 font-bold">
-                <Box size={20} className="text-amber-500" />
-                <span>Encomendas 3D</span>
-              </Link>
-              <Link to="/produtos" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-gray-50 text-gray-600 font-bold">
-                <Image size={20} className="text-amber-500" />
-                <span>Portifólio</span>
-              </Link>
+            {/* Header do Menu */}
+            <div className="h-20 flex items-center justify-between px-8 border-b border-gray-100 bg-white shrink-0">
+              <div className="flex items-center space-x-2">
+                <BeeLogo size={24} />
+                <span className="text-lg font-black text-gray-900 tracking-tight uppercase">Navegação</span>
+              </div>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 text-gray-400 hover:text-amber-500 bg-gray-50 rounded-2xl transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Links da Lista */}
+            <div className="flex-1 overflow-y-auto p-8 space-y-4 bg-white">
+              <button 
+                onClick={() => navigateAndClose('/')}
+                className="w-full flex items-center space-x-4 p-5 rounded-3xl bg-amber-50 text-amber-900 font-black border border-amber-100 text-left"
+              >
+                <Home size={22} />
+                <span className="text-base">Início</span>
+              </button>
+              
+              <button 
+                onClick={() => navigateAndClose('/dashboard')}
+                className="w-full flex items-center space-x-4 p-5 rounded-3xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
+              >
+                <Box size={22} className="text-amber-500" />
+                <span className="text-base">Encomendas 3D</span>
+              </button>
+
+              <button 
+                onClick={() => navigateAndClose('/produtos')}
+                className="w-full flex items-center space-x-4 p-5 rounded-3xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
+              >
+                <Image size={22} className="text-amber-500" />
+                <span className="text-base">Portifólio</span>
+              </button>
+
               {isResponsible && (
-                <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-4 p-4 rounded-2xl hover:bg-amber-50 text-amber-600 font-black">
-                  <Settings size={20} />
-                  <span>Painel do Dono</span>
-                </Link>
+                <div className="pt-8 mt-8 border-t border-gray-100">
+                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-4 px-2">Administração</p>
+                  <button 
+                    onClick={() => navigateAndClose('/admin')}
+                    className="w-full flex items-center space-x-4 p-5 rounded-3xl bg-gray-900 text-white font-black shadow-xl"
+                  >
+                    <Settings size={22} className="text-amber-400" />
+                    <span className="text-base">Painel Gestão</span>
+                  </button>
+                </div>
               )}
             </div>
 
-            <div className="p-6 border-t border-gray-50">
+            {/* Rodapé do Menu (Usuário) */}
+            <div className="p-8 border-t border-gray-100 bg-gray-50 shrink-0">
               {isAuthenticated ? (
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-4 p-2">
-                    <div className="w-10 h-10 bg-amber-400 rounded-2xl flex items-center justify-center text-white font-black text-sm">
+                  <div className="flex items-center space-x-4 bg-white p-5 rounded-[2rem] border border-gray-200/50 shadow-sm">
+                    <div className="w-12 h-12 bg-amber-400 rounded-2xl flex items-center justify-center text-white font-black text-xl shrink-0">
                       {user?.name.charAt(0)}
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900 leading-none">{user?.name}</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Conta Ativa</p>
+                    <div className="min-w-0">
+                      <p className="font-black text-gray-900 text-sm truncate">{user?.name}</p>
+                      <p className="text-[10px] text-amber-600 font-black uppercase tracking-widest mt-0.5">Conta Ativa</p>
                     </div>
                   </div>
-                  <button onClick={handleLogout} className="w-full flex items-center justify-center space-x-2 py-4 bg-red-50 text-red-500 rounded-2xl font-bold">
-                    <LogOut size={18} />
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center space-x-3 py-5 bg-red-50 text-red-500 rounded-3xl font-black text-sm hover:bg-red-100 transition-all border border-red-100/50"
+                  >
+                    <LogOut size={20} />
                     <span>Desconectar</span>
                   </button>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full flex items-center justify-center space-x-2 py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg shadow-gray-200">
-                  <User size={18} />
-                  <span>Entrar / Cadastrar</span>
-                </Link>
+                <button 
+                  onClick={() => navigateAndClose('/login')}
+                  className="w-full flex items-center justify-center space-x-4 py-5 bg-gray-900 text-white rounded-3xl font-black text-base shadow-2xl shadow-gray-300"
+                >
+                  <User size={22} />
+                  <span>Entrar na Loja</span>
+                </button>
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Overlay de Busca (Otimizado Mobile) */}
-      {isSearchOpen && (
-        <div className="fixed inset-0 z-[100] bg-white animate-in fade-in duration-200 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-4 pt-6 md:pt-20">
-            <div className="flex items-center justify-between mb-8 md:mb-12">
-              <div className="flex items-center space-x-3 md:space-x-4 flex-1">
-                <Search className="text-amber-500 hidden sm:block" size={32} />
-                <Search className="text-amber-500 sm:hidden" size={24} />
+      {/* Portal para Busca (Search Overlay) */}
+      {isSearchOpen && createPortal(
+        <div className="fixed inset-0 z-[100000] bg-white animate-in fade-in duration-300 overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-6 pt-10 md:pt-24 pb-20">
+            {/* Header da Busca */}
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center space-x-4 md:space-x-6 flex-1">
+                <Search className="text-amber-500 shrink-0" size={32} />
                 <input 
                   ref={searchInputRef}
                   type="text"
                   placeholder="Procurar na colmeia..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent text-xl md:text-3xl font-black text-gray-900 placeholder-gray-200 outline-none border-none"
+                  className="w-full bg-transparent text-2xl md:text-5xl font-black text-gray-900 placeholder-gray-100 outline-none border-none tracking-tight"
                   onKeyDown={(e) => e.key === 'Escape' && handleSearchClose()}
                 />
               </div>
               <button 
                 onClick={handleSearchClose}
-                className="p-2 md:p-3 bg-gray-100 rounded-xl md:rounded-full text-gray-400 hover:text-gray-900 transition-all"
+                className="p-4 bg-gray-100 rounded-full text-gray-400 hover:text-gray-900 hover:rotate-90 transition-all duration-300"
               >
-                <X size={24} />
+                <X size={28} />
               </button>
             </div>
 
-            <div className="pb-10">
-              {searchQuery && (
-                <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Resultados Encontrados</p>
+            {/* Resultados da Busca */}
+            <div className="space-y-10">
+              {searchQuery ? (
+                <div className="animate-in slide-in-from-top-4 duration-500">
+                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6 border-b border-gray-50 pb-4">Encontramos para você</p>
                   
                   {filteredResults.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-4">
                       {filteredResults.map(product => (
-                        <Link 
+                        <button 
                           key={product.id}
-                          to={`/product/${product.id}`}
-                          onClick={handleSearchClose}
-                          className="flex items-center p-3 md:p-4 bg-gray-50 rounded-2xl md:rounded-3xl border border-transparent hover:border-amber-200 hover:bg-white transition-all group"
+                          onClick={() => navigateAndClose(`/product/${product.id}`)}
+                          className="flex items-center p-5 bg-gray-50 rounded-[2.5rem] border border-transparent hover:border-amber-200 hover:bg-white hover:shadow-xl transition-all group text-left w-full"
                         >
-                          <img src={product.image} className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl object-cover shadow-sm" alt="" />
-                          <div className="ml-4 flex-1">
-                            <h4 className="font-bold text-sm md:text-base text-gray-900 group-hover:text-amber-600 transition-colors">{product.name}</h4>
-                            <p className="text-[10px] md:text-xs text-gray-400 font-medium">{product.category}</p>
+                          <img src={product.image} className="w-16 h-16 md:w-24 md:h-24 rounded-3xl object-cover shadow-sm group-hover:scale-110 transition-transform duration-500" alt="" />
+                          <div className="ml-6 flex-1">
+                            <h4 className="font-black text-lg text-gray-900 group-hover:text-amber-600 transition-colors leading-tight">{product.name}</h4>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">{product.category}</p>
                           </div>
-                          <div className="text-right">
-                            <span className="font-black text-xs md:text-base text-gray-900">R$ {product.price.toFixed(2)}</span>
+                          <div className="text-right ml-4">
+                            <span className="font-black text-xl text-gray-900">R$ {product.price.toFixed(2)}</span>
                           </div>
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-20 text-center">
-                      <p className="text-base text-gray-400 font-bold italic">Nenhum rastro de mel encontrado...</p>
+                    <div className="py-24 text-center">
+                      <div className="bg-amber-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Search size={32} className="text-amber-200" />
+                      </div>
+                      <p className="text-xl text-gray-300 font-black italic">Puxa! Nenhum rastro de mel por aqui...</p>
                     </div>
                   )}
                 </div>
-              )}
-
-              {!searchQuery && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 animate-in fade-in duration-500">
-                  {['Eletrônicos', 'Acessórios', 'Moda', '3D Printing'].map(cat => (
-                    <button 
-                      key={cat}
-                      onClick={() => setSearchQuery(cat)}
-                      className="p-5 bg-gray-50 rounded-2xl text-left flex items-center justify-between hover:bg-amber-50 transition-all"
-                    >
-                      <span className="text-xs font-black uppercase tracking-widest text-gray-600">{cat}</span>
-                      <ArrowRight size={14} className="text-amber-500" />
-                    </button>
-                  ))}
+              ) : (
+                <div className="animate-in fade-in duration-700">
+                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mb-8">Categorias em Alta</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {['Impressão 3D', 'Canecas', 'Curadoria Tech', 'Acessórios'].map(cat => (
+                      <button 
+                        key={cat}
+                        onClick={() => setSearchQuery(cat)}
+                        className="p-8 bg-gray-50 rounded-[2.5rem] text-left flex items-center justify-between hover:bg-amber-400 hover:text-gray-900 transition-all group"
+                      >
+                        <span className="text-lg font-black uppercase tracking-tight">{cat}</span>
+                        <ArrowRight size={20} className="text-amber-500 group-hover:text-gray-900 group-hover:translate-x-2 transition-all" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </nav>
   );

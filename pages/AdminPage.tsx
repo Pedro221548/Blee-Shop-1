@@ -2,9 +2,15 @@
 import React, { useState } from 'react';
 import { useProducts } from '../ProductContext';
 import { useAuth } from '../AuthContext';
-import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CustomOrder, PortfolioItem } from '../types';
+
+interface ConfirmModalState {
+  isOpen: boolean;
+  title: string;
+  onConfirm: () => void;
+}
 
 const AdminPage: React.FC = () => {
   const { 
@@ -29,6 +35,13 @@ const AdminPage: React.FC = () => {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   
+  // State para Modal de Confirmação Customizado
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
+    isOpen: false,
+    title: '',
+    onConfirm: () => {},
+  });
+
   // States para Edição de Portfólio
   const [editingPortfolioId, setEditingPortfolioId] = useState<string | null>(null);
   const [portfolioEditBuffer, setPortfolioEditBuffer] = useState<PortfolioItem | null>(null);
@@ -36,6 +49,17 @@ const AdminPage: React.FC = () => {
   const showFeedback = (msg: string) => {
     setFeedback(msg);
     setTimeout(() => setFeedback(null), 3000);
+  };
+
+  const openConfirm = (title: string, onConfirm: () => void) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      onConfirm: () => {
+        onConfirm();
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleAddProduct = () => {
@@ -99,6 +123,33 @@ const AdminPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200 border border-gray-100">
+            <div className="bg-red-50 w-16 h-16 rounded-3xl flex items-center justify-center text-red-500 mb-6 mx-auto">
+              <AlertTriangle size={32} />
+            </div>
+            <h3 className="text-xl font-black text-gray-900 text-center mb-2">{confirmModal.title}</h3>
+            <p className="text-gray-500 text-sm text-center mb-8 font-medium">Esta ação não poderá ser desfeita na colmeia.</p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={confirmModal.onConfirm}
+                className="w-full bg-red-500 text-white py-4 rounded-2xl font-black text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-100"
+              >
+                Sim, excluir
+              </button>
+              <button 
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="w-full bg-gray-100 text-gray-600 py-4 rounded-2xl font-black text-sm hover:bg-gray-200 transition-all"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Image Modal Viewer */}
       {viewingImage && (
         <div 
@@ -138,7 +189,7 @@ const AdminPage: React.FC = () => {
             <span>Ver Site</span>
           </Link>
           <button 
-            onClick={() => { if(confirm('Resetar para o padrão?')) resetProducts(); }}
+            onClick={() => openConfirm('Deseja realmente resetar ?', resetProducts)}
             className="flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95"
           >
             <RefreshCw size={16} />
@@ -322,7 +373,7 @@ const AdminPage: React.FC = () => {
                         ) : (
                           <>
                             <button 
-                              onClick={() => { if(confirm('Remover permanentemente?')) deletePortfolioItem(item.id); }}
+                              onClick={() => openConfirm('Deseja realmente excluir ?', () => deletePortfolioItem(item.id))}
                               className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                               title="Remover"
                             >
@@ -348,7 +399,6 @@ const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* Outras Abas permanecem... */}
       {activeTab === 'products' && (
         <div className="space-y-6 animate-slide-up">
           <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
@@ -449,7 +499,7 @@ const AdminPage: React.FC = () => {
 
                     <div className="flex items-end justify-end space-x-3">
                       <button 
-                        onClick={() => { if(confirm('Remover produto?')) deleteProduct(product.id); }}
+                        onClick={() => openConfirm('Deseja realmente excluir ?', () => deleteProduct(product.id))}
                         className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
                       >
                         <Trash2 size={24} />
@@ -534,7 +584,7 @@ const AdminPage: React.FC = () => {
                     <div className="flex gap-2">
                       <button onClick={() => window.open(`https://wa.me/${order.phone.replace(/\D/g, '')}`, '_blank')} className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-bold">WhatsApp</button>
                       <button onClick={() => updateOrderStatus(order.id, 'finished')} className="p-2 bg-gray-100 rounded-xl hover:bg-green-100"><CheckCircle2 size={16}/></button>
-                      <button onClick={() => {if(confirm('Excluir?')) deleteOrder(order.id);}} className="p-2 bg-gray-100 rounded-xl hover:bg-red-100"><Trash2 size={16}/></button>
+                      <button onClick={() => openConfirm('Deseja realmente excluir ?', () => deleteOrder(order.id))} className="p-2 bg-gray-100 rounded-xl hover:bg-red-100"><Trash2 size={16}/></button>
                     </div>
                   </div>
                </div>
