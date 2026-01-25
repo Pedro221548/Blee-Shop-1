@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, ProductContextType, StoreSettings, CustomOrder, Review } from './types';
+import { Product, ProductContextType, StoreSettings, CustomOrder, Review, PortfolioItem } from './types';
 import { PRODUCTS as INITIAL_PRODUCTS } from './constants';
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, set, push, update } from 'firebase/database';
@@ -32,9 +32,11 @@ const ProductContext = createContext<ProductContextType | undefined>(undefined);
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<CustomOrder[]>([]);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
+    // Products Listener
     const productsRef = ref(db, 'catalog/products');
     const unsubscribeProducts = onValue(productsRef, (snapshot) => {
       const data = snapshot.val();
@@ -49,6 +51,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
     });
 
+    // Orders Listener
     const ordersRef = ref(db, 'catalog/orders');
     const unsubscribeOrders = onValue(ordersRef, (snapshot) => {
       const data = snapshot.val();
@@ -63,6 +66,22 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
     });
 
+    // Portfolio Listener
+    const portfolioRef = ref(db, 'catalog/portfolio');
+    const unsubscribePortfolio = onValue(portfolioRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.entries(data).map(([id, val]: [string, any]) => ({
+          ...val,
+          id
+        })) as PortfolioItem[];
+        setPortfolioItems(list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      } else {
+        setPortfolioItems([]);
+      }
+    });
+
+    // Settings Listener
     const settingsRef = ref(db, 'catalog/settings');
     const unsubscribeSettings = onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
@@ -76,6 +95,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     return () => {
       unsubscribeProducts();
       unsubscribeOrders();
+      unsubscribePortfolio();
       unsubscribeSettings();
     };
   }, []);
@@ -152,10 +172,30 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     update(ref(db), updates);
   };
 
+  const addPortfolioItem = (itemData: Omit<PortfolioItem, 'id' | 'createdAt'>) => {
+    const portfolioRef = ref(db, 'catalog/portfolio');
+    const newItemRef = push(portfolioRef);
+    const newItem = {
+      ...itemData,
+      createdAt: new Date().toISOString()
+    };
+    set(newItemRef, newItem);
+  };
+
+  const updatePortfolioItem = (item: PortfolioItem) => {
+    const { id, ...data } = item;
+    set(ref(db, `catalog/portfolio/${id}`), data);
+  };
+
+  const deletePortfolioItem = (id: string) => {
+    set(ref(db, `catalog/portfolio/${id}`), null);
+  };
+
   return (
     <ProductContext.Provider value={{ 
       products, 
       orders,
+      portfolioItems,
       settings, 
       updateProduct, 
       addProduct, 
@@ -165,7 +205,10 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       addOrder,
       updateOrderStatus,
       deleteOrder,
-      addProductReview
+      addProductReview,
+      addPortfolioItem,
+      updatePortfolioItem,
+      deletePortfolioItem
     }}>
       {children}
     </ProductContext.Provider>

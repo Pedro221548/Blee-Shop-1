@@ -1,19 +1,11 @@
 
 import React, { useState } from 'react';
-// Import Link from react-router-dom to handle internal navigation
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Twitter, Facebook, ExternalLink, Camera, Zap, Heart, ZoomIn, X } from 'lucide-react';
-
-const PORTFOLIO_IMAGES = [
-  { id: 1, title: 'Action Figure Master', category: '3D Printing', url: 'https://images.unsplash.com/photo-1560762484-813fc97650a0?q=80&w=800&auto=format&fit=crop' },
-  { id: 2, title: 'Caneca Gamer Blee', category: 'Canecas', url: 'https://images.unsplash.com/photo-1514228742587-6b1558fbed20?q=80&w=800&auto=format&fit=crop' },
-  { id: 3, title: 'Suporte Tech Minimalista', category: '3D Printing', url: 'https://images.unsplash.com/photo-1586210579191-33b45e38fa2c?q=80&w=800&auto=format&fit=crop' },
-  { id: 4, title: 'Caneca Galáxia', category: 'Canecas', url: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?q=80&w=800&auto=format&fit=crop' },
-  { id: 5, title: 'Vaso Orgânico 3D', category: '3D Printing', url: 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?q=80&w=800&auto=format&fit=crop' },
-  { id: 6, title: 'Kit Escritório Blee', category: 'Personalizados', url: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6?q=80&w=800&auto=format&fit=crop' },
-];
+import { Instagram, Youtube, Camera, Zap, ZoomIn, X, Loader2 } from 'lucide-react';
+import { useProducts } from '../ProductContext';
 
 const ProductsGallery: React.FC = () => {
+  const { portfolioItems } = useProducts();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
@@ -53,36 +45,45 @@ const ProductsGallery: React.FC = () => {
 
       {/* Gallery Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PORTFOLIO_IMAGES.map((img) => (
-            <div 
-              key={img.id} 
-              className="group bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-zoom-in"
-              onClick={() => setSelectedImage(img.url)}
-            >
-              <div className="aspect-square relative overflow-hidden">
-                <img 
-                  src={img.url} 
-                  alt={img.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <ZoomIn className="text-white" size={32} />
-                </div>
-                <div className="absolute bottom-4 left-4">
-                  <span className="bg-white/95 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-900">
-                    {img.category}
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
-                  {img.title}
-                </h3>
-              </div>
+        {portfolioItems.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="animate-pulse flex flex-col items-center">
+               <Loader2 className="animate-spin text-amber-500 mb-4" size={40} />
+               <p className="text-gray-400 font-bold">Nossas abelhas estão preparando a galeria...</p>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {portfolioItems.map((img) => (
+              <div 
+                key={img.id} 
+                className="group bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-zoom-in animate-in fade-in slide-in-from-bottom-4"
+                onClick={() => setSelectedImage(img.url)}
+              >
+                <div className="aspect-square relative overflow-hidden bg-gray-50">
+                  <img 
+                    src={img.url} 
+                    alt={img.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ZoomIn className="text-white" size={32} />
+                  </div>
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-white/95 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-900">
+                      {img.category}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
+                    {img.title}
+                  </h3>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Social Media Section */}
@@ -139,7 +140,7 @@ const ProductsGallery: React.FC = () => {
           to="/dashboard" 
           className="text-amber-600 font-black text-xl hover:text-amber-700 underline underline-offset-8 decoration-amber-200 hover:decoration-amber-500 transition-all"
         >
-          Peça seu portifólio agora
+          Peça seu orçamento agora
         </Link>
       </section>
     </div>

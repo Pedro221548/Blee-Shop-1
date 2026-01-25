@@ -2,17 +2,36 @@
 import React, { useState } from 'react';
 import { useProducts } from '../ProductContext';
 import { useAuth } from '../AuthContext';
-import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { CustomOrder } from '../types';
+import { CustomOrder, PortfolioItem } from '../types';
 
 const AdminPage: React.FC = () => {
-  const { products, orders, settings, updateProduct, addProduct, deleteProduct, resetProducts, updateSettings, updateOrderStatus, deleteOrder } = useProducts();
+  const { 
+    products, 
+    orders, 
+    portfolioItems,
+    settings, 
+    updateProduct, 
+    addProduct, 
+    deleteProduct, 
+    resetProducts, 
+    updateSettings, 
+    updateOrderStatus, 
+    deleteOrder,
+    addPortfolioItem,
+    updatePortfolioItem,
+    deletePortfolioItem
+  } = useProducts();
+  
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'products' | 'branding' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'branding' | 'orders' | 'portfolio'>('products');
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
+  
+  // States para Edição de Portfólio
+  const [editingPortfolioId, setEditingPortfolioId] = useState<string | null>(null);
+  const [portfolioEditBuffer, setPortfolioEditBuffer] = useState<PortfolioItem | null>(null);
 
   const showFeedback = (msg: string) => {
     setFeedback(msg);
@@ -28,26 +47,47 @@ const AdminPage: React.FC = () => {
       image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&h=600&auto=format&fit=crop"
     });
     showFeedback("Novo produto adicionado!");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleReset = () => {
-    if (window.confirm("Isso apagará todas as suas edições personalizadas. Deseja resetar o catálogo para o padrão?")) {
-      resetProducts();
-      showFeedback("Catálogo resetado.");
+  const handleAddPortfolio = () => {
+    const tempId = "new_" + Date.now();
+    const newItem: PortfolioItem = {
+      id: tempId,
+      title: "Novo Trabalho",
+      category: "Geral",
+      url: "https://images.unsplash.com/photo-1560762484-813fc97650a0?q=80&w=800&auto=format&fit=crop",
+      createdAt: new Date().toISOString()
+    };
+    
+    // Inicia edição imediatamente para o novo item
+    setEditingPortfolioId(tempId);
+    setPortfolioEditBuffer(newItem);
+    showFeedback("Preencha os dados do novo trabalho.");
+  };
+
+  const startEditingPortfolio = (item: PortfolioItem) => {
+    setEditingPortfolioId(item.id);
+    setPortfolioEditBuffer({ ...item });
+  };
+
+  const cancelEditingPortfolio = () => {
+    setEditingPortfolioId(null);
+    setPortfolioEditBuffer(null);
+  };
+
+  const savePortfolioEdit = () => {
+    if (!portfolioEditBuffer) return;
+
+    if (editingPortfolioId?.startsWith('new_')) {
+      const { id, createdAt, ...data } = portfolioEditBuffer;
+      addPortfolioItem(data);
+    } else {
+      updatePortfolioItem(portfolioEditBuffer);
     }
-  };
 
-  const confirmDelete = (id: number) => {
-    deleteProduct(id);
-    setDeletingId(null);
-    showFeedback("Produto removido com sucesso.");
-  };
-
-  const openWhatsApp = (phone: string, description: string) => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    const message = encodeURIComponent(`Olá! Sou da Blee Shop. Vi sua solicitação para: ${description}. Podemos conversar?`);
-    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+    setEditingPortfolioId(null);
+    setPortfolioEditBuffer(null);
+    showFeedback("Trabalho salvo com sucesso!");
   };
 
   const getStatusStyle = (status: CustomOrder['status']) => {
@@ -74,7 +114,7 @@ const AdminPage: React.FC = () => {
           </button>
           <img 
             src={viewingImage} 
-            alt="Referência do cliente" 
+            alt="Visualização" 
             className="max-w-full max-h-full object-contain rounded-xl shadow-2xl animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           />
@@ -91,7 +131,7 @@ const AdminPage: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
           <h1 className="text-4xl font-black text-gray-900 tracking-tight">ADMINISTRAÇÃO</h1>
-          <p className="text-gray-500 font-medium">Olá, <span className="text-amber-600">{user?.name}</span>. Controle sua vitrine e personalize a experiência.</p>
+          <p className="text-gray-500 font-medium">Olá, <span className="text-amber-600">{user?.name}</span>. Controle sua vitrine e portfólio.</p>
         </div>
         <div className="flex items-center space-x-3">
           <Link to="/" className="flex items-center space-x-2 px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-200 transition-all">
@@ -99,11 +139,11 @@ const AdminPage: React.FC = () => {
             <span>Ver Site</span>
           </Link>
           <button 
-            onClick={handleReset}
-            className="flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95"
+            onClick={() => { if(confirm('Resetar para o padrão?')) resetProducts(); }}
+            className="flex items-center space-x-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95"
           >
             <RefreshCw size={16} />
-            <span>Limpar Tudo</span>
+            <span>Resetar</span>
           </button>
         </div>
       </div>
@@ -114,7 +154,14 @@ const AdminPage: React.FC = () => {
           className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'products' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <ShoppingBag size={18} />
-          <span>Configurar Links</span>
+          <span>Links Loja</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('portfolio')}
+          className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'portfolio' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Camera size={18} />
+          <span>Portifólio</span>
         </button>
         <button 
           onClick={() => setActiveTab('orders')}
@@ -133,104 +180,170 @@ const AdminPage: React.FC = () => {
           className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'branding' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
         >
           <Layout size={18} />
-          <span>Identidade Visual</span>
+          <span>Visual</span>
         </button>
       </div>
 
-      {activeTab === 'branding' && (
-        <div className="bg-white border border-gray-100 rounded-[2.5rem] p-10 shadow-sm animate-slide-up">
-          <div className="max-w-3xl">
-            <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center">
-              <Settings className="mr-3 text-amber-500" size={24} />
-              Configurações da Vitrine
-            </h2>
+      {activeTab === 'portfolio' && (
+        <div className="space-y-6 animate-slide-up">
+          <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-900">Trabalhos do Portifólio ({portfolioItems.length})</h2>
+            <button 
+              onClick={handleAddPortfolio}
+              disabled={editingPortfolioId !== null}
+              className="flex items-center space-x-2 px-6 py-3 bg-amber-400 rounded-2xl text-sm font-bold text-gray-900 hover:bg-amber-500 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+            >
+              <Plus size={18} />
+              <span>Novo Trabalho</span>
+            </button>
+          </div>
 
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Nome da Loja</label>
-                  <input 
-                    type="text" 
-                    value={settings.storeName}
-                    onChange={(e) => updateSettings({...settings, storeName: e.target.value})}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Tagline (Rodapé)</label>
-                  <input 
-                    type="text" 
-                    value={settings.storeTagline}
-                    onChange={(e) => updateSettings({...settings, storeTagline: e.target.value})}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Título do Banner (Bold)</label>
-                  <input 
-                    type="text" 
-                    value={settings.heroTitle}
-                    onChange={(e) => updateSettings({...settings, heroTitle: e.target.value})}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-amber-500 uppercase tracking-widest">Destaque do Banner (Colorido)</label>
-                  <input 
-                    type="text" 
-                    value={settings.heroHighlight}
-                    onChange={(e) => updateSettings({...settings, heroHighlight: e.target.value})}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold text-amber-600"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Descrição do Banner</label>
-                <textarea 
-                  rows={3}
-                  value={settings.heroDescription}
-                  onChange={(e) => updateSettings({...settings, heroDescription: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none resize-none transition-all font-medium leading-relaxed"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">URL da Imagem de Capa</label>
-                <div className="flex gap-4 items-start">
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 shrink-0">
-                    <img src={settings.heroImageUrl} className="w-full h-full object-cover" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Se estiver criando um novo, ele aparece no topo mas não está na lista oficial ainda */}
+            {editingPortfolioId?.startsWith('new_') && portfolioEditBuffer && (
+              <div className="bg-white border-2 border-amber-400 rounded-[2.5rem] p-6 shadow-xl animate-pulse-subtle">
+                <div className="flex flex-col sm:flex-row gap-6">
+                   <div className="w-full sm:w-40 h-40 rounded-3xl overflow-hidden bg-gray-50 shrink-0">
+                    <img src={portfolioEditBuffer.url} className="w-full h-full object-cover opacity-50" />
                   </div>
-                  <input 
-                    type="text" 
-                    value={settings.heroImageUrl}
-                    onChange={(e) => updateSettings({...settings, heroImageUrl: e.target.value})}
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium"
-                    placeholder="Cole a URL de uma imagem..."
-                  />
+                  <div className="flex-1 space-y-4">
+                     <div className="space-y-1">
+                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Título (Novo)</label>
+                      <input 
+                        type="text" 
+                        autoFocus
+                        value={portfolioEditBuffer.title}
+                        onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, title: e.target.value})}
+                        className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Categoria</label>
+                      <input 
+                        type="text" 
+                        value={portfolioEditBuffer.category}
+                        onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, category: e.target.value})}
+                        className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">URL Imagem</label>
+                      <input 
+                        type="text" 
+                        value={portfolioEditBuffer.url}
+                        onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, url: e.target.value})}
+                        className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-3 pt-2">
+                      <button onClick={cancelEditingPortfolio} className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
+                        <X size={20} />
+                      </button>
+                      <button onClick={savePortfolioEdit} className="p-3 bg-amber-400 text-gray-900 rounded-xl hover:bg-amber-500 transition-all shadow-md">
+                        <Save size={20} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-green-600 text-xs font-black bg-green-50 px-4 py-2 rounded-full border border-green-100">
-                  <CheckCircle size={14} />
-                  <span className="uppercase tracking-widest">Sincronizado via Firebase</span>
+            {portfolioItems.map(item => {
+              const isEditing = editingPortfolioId === item.id;
+              const displayData = isEditing ? portfolioEditBuffer! : item;
+
+              return (
+                <div key={item.id} className={`bg-white border rounded-[2.5rem] p-6 shadow-sm transition-all ${isEditing ? 'border-amber-400 ring-2 ring-amber-100 shadow-lg' : 'border-gray-100 hover:border-gray-200'}`}>
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    <div className="w-full sm:w-40 h-40 rounded-3xl overflow-hidden bg-gray-50 shrink-0 cursor-pointer group relative" onClick={() => setViewingImage(displayData.url)}>
+                      <img src={displayData.url} className={`w-full h-full object-cover transition-transform ${isEditing ? 'opacity-80' : 'group-hover:scale-110'}`} />
+                      {!isEditing && (
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="text-white" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 space-y-4">
+                      {isEditing ? (
+                        <>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Título</label>
+                            <input 
+                              type="text" 
+                              value={displayData.title}
+                              onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, title: e.target.value})}
+                              className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Categoria</label>
+                            <input 
+                              type="text" 
+                              value={displayData.category}
+                              onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, category: e.target.value})}
+                              className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">URL Imagem</label>
+                            <input 
+                              type="text" 
+                              value={displayData.url}
+                              onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, url: e.target.value})}
+                              className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="h-full flex flex-col">
+                          <div className="flex-1">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{item.category}</p>
+                            <h3 className="text-lg font-black text-gray-900 leading-tight mb-2">{item.title}</h3>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end space-x-2 pt-2">
+                        {isEditing ? (
+                          <>
+                            <button onClick={cancelEditingPortfolio} className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all" title="Cancelar">
+                              <RotateCcw size={20} />
+                            </button>
+                            <button onClick={savePortfolioEdit} className="p-3 bg-amber-400 text-gray-900 rounded-xl hover:bg-amber-500 transition-all shadow-md" title="Salvar">
+                              <Save size={20} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              onClick={() => { if(confirm('Remover do portfólio?')) deletePortfolioItem(item.id); }}
+                              className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                              title="Remover"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                            <button 
+                              onClick={() => startEditingPortfolio(item)}
+                              disabled={editingPortfolioId !== null}
+                              className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all disabled:opacity-30"
+                              title="Editar"
+                            >
+                              <Edit3 size={20} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => showFeedback("Configurações salvas!")}
-                  className="bg-gray-900 text-white px-10 py-4 rounded-2xl font-bold hover:bg-black transition-all shadow-xl shadow-gray-200"
-                >
-                  Salvar Mudanças
-                </button>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       )}
 
+      {/* Restante dos componentes de abas (Links Loja, Visual, Solicitações)... */}
       {activeTab === 'products' && (
         <div className="space-y-6 animate-slide-up">
           <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
@@ -330,36 +443,12 @@ const AdminPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-end justify-end space-x-3">
-                      <div className="relative">
-                        {deletingId === product.id ? (
-                          <div className="flex items-center space-x-2 bg-blue-50 border-2 border-dashed border-blue-400 p-2.5 rounded-2xl animate-zoom-in">
-                             <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600">
-                                <AlertCircle size={14} />
-                             </div>
-                             <span className="text-[10px] font-black text-blue-700 uppercase tracking-tight px-1">Excluir item?</span>
-                             <button 
-                                onClick={() => confirmDelete(product.id)}
-                                className="bg-red-600 text-white p-2 rounded-xl hover:bg-red-700 transition-all shadow-md active:scale-90"
-                             >
-                                <CheckCircle size={16} />
-                             </button>
-                             <button 
-                                onClick={() => setDeletingId(null)}
-                                className="bg-white text-gray-500 p-2 rounded-xl hover:bg-gray-100 transition-all border border-gray-200"
-                             >
-                                <X size={16} />
-                             </button>
-                          </div>
-                        ) : (
-                          <button 
-                            onClick={() => setDeletingId(product.id)}
-                            className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
-                            title="Remover Produto"
-                          >
-                            <Trash2 size={24} />
-                          </button>
-                        )}
-                      </div>
+                      <button 
+                        onClick={() => { if(confirm('Remover produto?')) deleteProduct(product.id); }}
+                        className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+                      >
+                        <Trash2 size={24} />
+                      </button>
                       <div className="flex items-center space-x-2 text-green-600 text-[10px] font-black bg-green-50 px-4 py-4 rounded-2xl border border-green-100">
                         <CheckCircle size={16} />
                         <span className="uppercase tracking-widest">SINCRONIZADO</span>
@@ -373,6 +462,48 @@ const AdminPage: React.FC = () => {
         </div>
       )}
 
+      {activeTab === 'branding' && (
+        <div className="bg-white border border-gray-100 rounded-[2.5rem] p-10 shadow-sm animate-slide-up">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center">
+              <Settings className="mr-3 text-amber-500" size={24} />
+              Identidade Visual
+            </h2>
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Nome da Loja</label>
+                  <input 
+                    type="text" 
+                    value={settings.storeName}
+                    onChange={(e) => updateSettings({...settings, storeName: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Tagline</label>
+                  <input 
+                    type="text" 
+                    value={settings.storeTagline}
+                    onChange={(e) => updateSettings({...settings, storeTagline: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Banner Principal URL</label>
+                <input 
+                  type="text" 
+                  value={settings.heroImageUrl}
+                  onChange={(e) => updateSettings({...settings, heroImageUrl: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'orders' && (
         <div className="space-y-6 animate-slide-up">
            <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
@@ -381,20 +512,9 @@ const AdminPage: React.FC = () => {
               <span>Solicitações de Orçamento ({orders.length})</span>
             </h2>
           </div>
-
-          {orders.length === 0 ? (
-            <div className="bg-white p-20 rounded-[3rem] border border-gray-100 text-center">
-              <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
-                <MessageSquare size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhuma solicitação ainda</h3>
-              <p className="text-gray-500">Quando os clientes pedirem peças 3D ou canecas, elas aparecerão aqui.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {orders.map(order => (
-                <div key={order.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
-                  {/* Status Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {orders.map(order => (
+               <div key={order.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
                   <div className={`px-6 py-3 border-b border-gray-50 text-[10px] font-black uppercase tracking-widest flex justify-between items-center ${getStatusStyle(order.status)}`}>
                     <div className="flex items-center space-x-2">
                       <Clock size={12} />
@@ -402,81 +522,19 @@ const AdminPage: React.FC = () => {
                     </div>
                     <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                   </div>
-
-                  <div className="p-6 flex-grow flex flex-col">
-                    <div className="flex items-center space-x-4 mb-6">
-                      <div 
-                        className={`w-16 h-16 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 shrink-0 relative group ${order.image ? 'cursor-zoom-in' : ''}`}
-                        onClick={() => order.image && setViewingImage(order.image)}
-                      >
-                        {order.image ? (
-                          <>
-                            <img src={order.image} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <ZoomIn className="text-white" size={16} />
-                            </div>
-                          </>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300">
-                            {order.type === '3d' ? <Box size={24} /> : <Coffee size={24} />}
-                          </div>
-                        )}
-                      </div>
-                      <div className="overflow-hidden">
-                        <h4 className="font-black text-gray-900 leading-tight truncate">{order.customerName}</h4>
-                        <p className="text-[10px] font-bold text-gray-400 truncate">{order.customerEmail}</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-2xl mb-6 flex-grow">
-                      <div className="flex items-center space-x-2 mb-2">
-                        {order.type === '3d' ? <Box size={14} className="text-amber-500" /> : <Coffee size={14} className="text-amber-500" />}
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{order.type === '3d' ? 'Peça 3D' : 'Caneca'}</span>
-                      </div>
-                      <p className="text-sm text-gray-600 font-medium line-clamp-4 leading-relaxed italic">
-                        "{order.description}"
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <button 
-                        onClick={() => openWhatsApp(order.phone, order.description)}
-                        className="w-full bg-green-500 text-white py-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-xs hover:bg-green-600 transition-all shadow-lg shadow-green-100"
-                      >
-                        <MessageSquare size={16} />
-                        <span>Chamar no WhatsApp</span>
-                      </button>
-
-                      <div className="flex gap-2">
-                        {order.status !== 'contacted' && (
-                          <button 
-                            onClick={() => updateOrderStatus(order.id, 'contacted')}
-                            className="flex-1 bg-blue-50 text-blue-600 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-all border border-blue-100"
-                          >
-                            Marcar Contato
-                          </button>
-                        )}
-                        {order.status !== 'finished' && (
-                          <button 
-                            onClick={() => updateOrderStatus(order.id, 'finished')}
-                            className="flex-1 bg-green-50 text-green-600 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-green-100 transition-all border border-green-100"
-                          >
-                            Finalizar
-                          </button>
-                        )}
-                        <button 
-                          onClick={() => { if(confirm('Excluir solicitação?')) deleteOrder(order.id); }}
-                          className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-all border border-red-100"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                  <div className="p-6">
+                    <h4 className="font-black text-gray-900">{order.customerName}</h4>
+                    <p className="text-xs text-gray-500 mb-4">{order.customerEmail}</p>
+                    <p className="text-sm italic mb-6">"{order.description}"</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => window.open(`https://wa.me/${order.phone.replace(/\D/g, '')}`, '_blank')} className="flex-1 bg-green-500 text-white py-2 rounded-xl text-xs font-bold">WhatsApp</button>
+                      <button onClick={() => updateOrderStatus(order.id, 'finished')} className="p-2 bg-gray-100 rounded-xl hover:bg-green-100"><CheckCircle2 size={16}/></button>
+                      <button onClick={() => {if(confirm('Excluir?')) deleteOrder(order.id);}} className="p-2 bg-gray-100 rounded-xl hover:bg-red-100"><Trash2 size={16}/></button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+               </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

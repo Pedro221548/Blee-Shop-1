@@ -21,6 +21,14 @@ export interface Product {
   shopeeUrl?: string;
 }
 
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  category: string;
+  url: string;
+  createdAt: string;
+}
+
 export interface CartItem extends Product {
   quantity: number;
 }
@@ -60,6 +68,7 @@ export interface StoreSettings {
 export interface ProductContextType {
   products: Product[];
   orders: CustomOrder[];
+  portfolioItems: PortfolioItem[];
   settings: StoreSettings;
   updateProduct: (updatedProduct: Product) => void;
   addProduct: (newProduct: Omit<Product, 'id' | 'rating' | 'reviews'>) => void;
@@ -70,4 +79,7 @@ export interface ProductContextType {
   updateOrderStatus: (orderId: string, status: CustomOrder['status']) => void;
   deleteOrder: (orderId: string) => void;
   addProductReview: (productId: number, review: Omit<Review, 'id' | 'date'>) => void;
+  addPortfolioItem: (item: Omit<PortfolioItem, 'id' | 'createdAt'>) => void;
+  updatePortfolioItem: (item: PortfolioItem) => void;
+  deletePortfolioItem: (id: string) => void;
 }
