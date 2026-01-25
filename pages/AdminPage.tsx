@@ -59,7 +59,6 @@ const AdminPage: React.FC = () => {
       createdAt: new Date().toISOString()
     };
     
-    // Inicia edição imediatamente para o novo item
     setEditingPortfolioId(tempId);
     setPortfolioEditBuffer(newItem);
     showFeedback("Preencha os dados do novo trabalho.");
@@ -87,7 +86,7 @@ const AdminPage: React.FC = () => {
 
     setEditingPortfolioId(null);
     setPortfolioEditBuffer(null);
-    showFeedback("Trabalho salvo com sucesso!");
+    showFeedback("Trabalho salvo!");
   };
 
   const getStatusStyle = (status: CustomOrder['status']) => {
@@ -191,7 +190,7 @@ const AdminPage: React.FC = () => {
             <button 
               onClick={handleAddPortfolio}
               disabled={editingPortfolioId !== null}
-              className="flex items-center space-x-2 px-6 py-3 bg-amber-400 rounded-2xl text-sm font-bold text-gray-900 hover:bg-amber-500 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+              className="flex items-center space-x-2 px-6 py-3 bg-amber-400 rounded-2xl text-sm font-bold text-gray-900 hover:bg-amber-500 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:grayscale"
             >
               <Plus size={18} />
               <span>Novo Trabalho</span>
@@ -199,48 +198,51 @@ const AdminPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Se estiver criando um novo, ele aparece no topo mas não está na lista oficial ainda */}
+            {/* Novo Trabalho sendo criado */}
             {editingPortfolioId?.startsWith('new_') && portfolioEditBuffer && (
-              <div className="bg-white border-2 border-amber-400 rounded-[2.5rem] p-6 shadow-xl animate-pulse-subtle">
+              <div className="bg-white border-2 border-amber-400 rounded-[2.5rem] p-6 shadow-xl animate-in zoom-in duration-300">
                 <div className="flex flex-col sm:flex-row gap-6">
-                   <div className="w-full sm:w-40 h-40 rounded-3xl overflow-hidden bg-gray-50 shrink-0">
+                   <div className="w-full sm:w-40 h-40 rounded-3xl overflow-hidden bg-gray-50 shrink-0 border border-amber-100">
                     <img src={portfolioEditBuffer.url} className="w-full h-full object-cover opacity-50" />
                   </div>
-                  <div className="flex-1 space-y-4">
-                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Título (Novo)</label>
-                      <input 
-                        type="text" 
-                        autoFocus
-                        value={portfolioEditBuffer.title}
-                        onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, title: e.target.value})}
-                        className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
-                      />
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="space-y-3">
+                       <div className="space-y-1">
+                        <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Título</label>
+                        <input 
+                          type="text" 
+                          autoFocus
+                          value={portfolioEditBuffer.title}
+                          onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, title: e.target.value})}
+                          className="w-full bg-amber-50/50 border border-amber-100 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Categoria</label>
+                        <input 
+                          type="text" 
+                          value={portfolioEditBuffer.category}
+                          onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, category: e.target.value})}
+                          className="w-full bg-amber-50/50 border border-amber-100 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">URL da Imagem</label>
+                        <input 
+                          type="text" 
+                          value={portfolioEditBuffer.url}
+                          onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, url: e.target.value})}
+                          className="w-full bg-amber-50/50 border border-amber-100 rounded-xl px-4 py-2 text-[10px] focus:ring-2 focus:ring-amber-500 outline-none"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Categoria</label>
-                      <input 
-                        type="text" 
-                        value={portfolioEditBuffer.category}
-                        onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, category: e.target.value})}
-                        className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">URL Imagem</label>
-                      <input 
-                        type="text" 
-                        value={portfolioEditBuffer.url}
-                        onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer, url: e.target.value})}
-                        className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none"
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-3 pt-2">
-                      <button onClick={cancelEditingPortfolio} className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
-                        <X size={20} />
+                    <div className="flex justify-end space-x-2 pt-4 border-t border-amber-50 mt-4">
+                      <button onClick={cancelEditingPortfolio} className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all">
+                        <X size={18} />
                       </button>
-                      <button onClick={savePortfolioEdit} className="p-3 bg-amber-400 text-gray-900 rounded-xl hover:bg-amber-500 transition-all shadow-md">
-                        <Save size={20} />
+                      <button onClick={savePortfolioEdit} className="flex items-center space-x-2 px-5 py-2.5 bg-amber-400 text-gray-900 rounded-xl hover:bg-amber-500 transition-all shadow-md font-bold text-xs">
+                        <Save size={16} />
+                        <span>Salvar Novo</span>
                       </button>
                     </div>
                   </div>
@@ -253,10 +255,10 @@ const AdminPage: React.FC = () => {
               const displayData = isEditing ? portfolioEditBuffer! : item;
 
               return (
-                <div key={item.id} className={`bg-white border rounded-[2.5rem] p-6 shadow-sm transition-all ${isEditing ? 'border-amber-400 ring-2 ring-amber-100 shadow-lg' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div key={item.id} className={`bg-white border rounded-[2.5rem] p-6 transition-all duration-300 ${isEditing ? 'border-amber-400 ring-4 ring-amber-50 shadow-2xl' : 'border-gray-100 hover:border-gray-200 shadow-sm'}`}>
                   <div className="flex flex-col sm:flex-row gap-6">
-                    <div className="w-full sm:w-40 h-40 rounded-3xl overflow-hidden bg-gray-50 shrink-0 cursor-pointer group relative" onClick={() => setViewingImage(displayData.url)}>
-                      <img src={displayData.url} className={`w-full h-full object-cover transition-transform ${isEditing ? 'opacity-80' : 'group-hover:scale-110'}`} />
+                    <div className="w-full sm:w-40 h-40 rounded-3xl overflow-hidden bg-gray-50 shrink-0 cursor-pointer group relative border border-gray-50" onClick={() => !isEditing && setViewingImage(displayData.url)}>
+                      <img src={displayData.url} className={`w-full h-full object-cover transition-transform duration-500 ${isEditing ? 'scale-105 brightness-90' : 'group-hover:scale-110'}`} />
                       {!isEditing && (
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <ZoomIn className="text-white" size={24} />
@@ -264,60 +266,63 @@ const AdminPage: React.FC = () => {
                       )}
                     </div>
                     
-                    <div className="flex-1 space-y-4">
-                      {isEditing ? (
-                        <>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Título</label>
-                            <input 
-                              type="text" 
-                              value={displayData.title}
-                              onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, title: e.target.value})}
-                              className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
-                            />
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="space-y-4">
+                        {isEditing ? (
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Título</label>
+                              <input 
+                                type="text" 
+                                value={displayData.title}
+                                onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, title: e.target.value})}
+                                className="w-full bg-amber-50/30 border border-amber-100 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Categoria</label>
+                              <input 
+                                type="text" 
+                                value={displayData.category}
+                                onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, category: e.target.value})}
+                                className="w-full bg-amber-50/30 border border-amber-100 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Link da Imagem</label>
+                              <input 
+                                type="text" 
+                                value={displayData.url}
+                                onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, url: e.target.value})}
+                                className="w-full bg-amber-50/30 border border-amber-100 rounded-xl px-4 py-2 text-[10px] focus:ring-2 focus:ring-amber-500 outline-none"
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Categoria</label>
-                            <input 
-                              type="text" 
-                              value={displayData.category}
-                              onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, category: e.target.value})}
-                              className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                            />
+                        ) : (
+                          <div className="pt-2">
+                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100 mb-2 inline-block">
+                              {item.category}
+                            </span>
+                            <h3 className="text-xl font-black text-gray-900 leading-tight line-clamp-2">{item.title}</h3>
                           </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest">URL Imagem</label>
-                            <input 
-                              type="text" 
-                              value={displayData.url}
-                              onChange={(e) => setPortfolioEditBuffer({...portfolioEditBuffer!, url: e.target.value})}
-                              className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-amber-500 outline-none"
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <div className="h-full flex flex-col">
-                          <div className="flex-1">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{item.category}</p>
-                            <h3 className="text-lg font-black text-gray-900 leading-tight mb-2">{item.title}</h3>
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
-                      <div className="flex justify-end space-x-2 pt-2">
+                      <div className={`flex justify-end space-x-2 pt-4 border-t mt-4 transition-colors ${isEditing ? 'border-amber-100' : 'border-gray-50'}`}>
                         {isEditing ? (
                           <>
-                            <button onClick={cancelEditingPortfolio} className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all" title="Cancelar">
-                              <RotateCcw size={20} />
+                            <button onClick={cancelEditingPortfolio} className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all" title="Cancelar">
+                              <RotateCcw size={18} />
                             </button>
-                            <button onClick={savePortfolioEdit} className="p-3 bg-amber-400 text-gray-900 rounded-xl hover:bg-amber-500 transition-all shadow-md" title="Salvar">
-                              <Save size={20} />
+                            <button onClick={savePortfolioEdit} className="flex items-center space-x-2 px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-amber-500 transition-all shadow-md font-bold text-xs">
+                              <Save size={16} />
+                              <span>Salvar</span>
                             </button>
                           </>
                         ) : (
                           <>
                             <button 
-                              onClick={() => { if(confirm('Remover do portfólio?')) deletePortfolioItem(item.id); }}
+                              onClick={() => { if(confirm('Remover permanentemente?')) deletePortfolioItem(item.id); }}
                               className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                               title="Remover"
                             >
@@ -326,7 +331,7 @@ const AdminPage: React.FC = () => {
                             <button 
                               onClick={() => startEditingPortfolio(item)}
                               disabled={editingPortfolioId !== null}
-                              className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all disabled:opacity-30"
+                              className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all disabled:opacity-20"
                               title="Editar"
                             >
                               <Edit3 size={20} />
@@ -343,7 +348,7 @@ const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* Restante dos componentes de abas (Links Loja, Visual, Solicitações)... */}
+      {/* Outras Abas permanecem... */}
       {activeTab === 'products' && (
         <div className="space-y-6 animate-slide-up">
           <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
