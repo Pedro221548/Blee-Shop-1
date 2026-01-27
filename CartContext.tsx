@@ -1,8 +1,18 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, CartItem, CartContextType, ShippingOption } from './types';
+import { Product, CartItem, CartContextType, ShippingOption, AddressInfo } from './types';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+const INITIAL_ADDRESS: AddressInfo = {
+  logradouro: '',
+  bairro: '',
+  localidade: '',
+  uf: '',
+  numero: '',
+  complemento: '',
+  destinatario: ''
+};
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -16,10 +26,23 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [notification, setNotification] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [cep, setCep] = useState(() => localStorage.getItem('bleeshop-cep') || '');
+  const [address, setAddress] = useState<AddressInfo>(() => {
+    const saved = localStorage.getItem('bleeshop-address');
+    return saved ? JSON.parse(saved) : INITIAL_ADDRESS;
+  });
 
   useEffect(() => {
     localStorage.setItem('bleeshop-cart', JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem('bleeshop-cep', cep);
+  }, [cep]);
+
+  useEffect(() => {
+    localStorage.setItem('bleeshop-address', JSON.stringify(address));
+  }, [address]);
 
   const triggerNotification = (message: string) => {
     setNotification(message);
@@ -62,7 +85,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return (
     <CartContext.Provider value={{
       cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, notification,
-      selectedShipping, setSelectedShipping
+      selectedShipping, setSelectedShipping, cep, setCep, address, setAddress
     }}>
       {children}
     </CartContext.Provider>

@@ -1,9 +1,6 @@
 
 /**
- * EXEMPLO DE BACKEND NODE.JS (EXPRESS)
- * 
- * Requisitos:
- * npm install express mercadopago cors body-parser
+ * BACKEND NODE.JS (EXPRESS) - BLEE SHOP
  */
 
 const express = require('express');
@@ -15,16 +12,15 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// CONFIGURAÇÃO: Access Token de Teste do Usuário
+// CONFIGURAÇÃO: Novo Access Token fornecido pelo usuário
 const client = new MercadoPagoConfig({ 
-  accessToken: 'TEST-4254129152237411-030503-9ba150eaa55214744a16560ce8ab4d12-493241392' 
+  accessToken: 'APP_USR-5007959568656748-012702-8377ea142e422f8dd44d63b22ff0b83f-3162478356' 
 });
 
 app.post('/criar-pagamento', async (req, res) => {
   try {
     const { items, shippingPrice, customer } = req.body;
 
-    // Constrói os itens para o Mercado Pago
     const mpItems = [
       ...items.map(item => ({
         id: item.title,
@@ -35,7 +31,6 @@ app.post('/criar-pagamento', async (req, res) => {
       }))
     ];
 
-    // Adiciona o frete como um item de serviço, se houver
     if (shippingPrice > 0) {
       mpItems.push({
         id: 'frete-blee',
