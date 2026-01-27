@@ -4,14 +4,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
 
-# Configuração de logs
+# Configuração de logs para debug
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
 
-# Credenciais de Teste fornecidas pelo usuário
+# Credencial fornecida: APP_USR-5007959568656748-012702-8377ea142e422f8dd44d63b22ff0b83f-3162478356
 ACCESS_TOKEN = "APP_USR-5007959568656748-012702-8377ea142e422f8dd44d63b22ff0b83f-3162478356"
 sdk = mercadopago.SDK(ACCESS_TOKEN)
 
@@ -22,33 +22,33 @@ def criar_pagamento():
         items_req = data.get('items', [])
         shipping_price = data.get('shippingPrice', 0)
         customer = data.get('customer', {})
+        # Recebe a origem do frontend para garantir back_urls corretas
+        origin = data.get('origin', 'https://bleeshop.web.app')
 
-        logger.info(f"Gerando preferência para: {customer.get('email')}")
+        logger.info(f"Gerando preferência para: {customer.get('email')} vindo de {origin}")
 
-        # 1. Montagem dos itens com validação de tipos
+        # 1. Montagem rigorosa dos itens
         preference_items = []
         for item in items_req:
             preference_items.append({
-                "id": str(item.get('title')),
+                "id": str(item.get('title'))[:20], # ID curto
                 "title": str(item.get('title')),
-                "description": f"Produto Blee Shop: {item.get('title')}",
                 "quantity": int(item.get('quantity', 1)),
                 "currency_id": "BRL",
                 "unit_price": round(float(item.get('unit_price')), 2)
             })
 
-        # 2. Inclusão do frete como item (recomendado para Checkout Pro)
+        # 2. Adicionar frete como item se existir
         if shipping_price > 0:
             preference_items.append({
-                "id": "shipping-cost",
-                "title": "Custo de Envio (Logística Blee)",
-                "description": "Entrega via transportadora parceira",
+                "id": "shipping-fee",
+                "title": "Frete e Entrega Blee Shop",
                 "quantity": 1,
                 "currency_id": "BRL",
                 "unit_price": round(float(shipping_price), 2)
             })
 
-        # 3. Estrutura da Preferência (Checkout Pro / Redirect)
+        # 3. Definição da Preferência (Checkout Pro)
         preference_data = {
             "items": preference_items,
             "payer": {
@@ -56,9 +56,9 @@ def criar_pagamento():
                 "email": customer.get('email', ''),
             },
             "back_urls": {
-                "success": "https://bleeshop.web.app/#/dashboard",
-                "failure": "https://bleeshop.web.app/#/cart",
-                "pending": "https://bleeshop.web.app/#/dashboard"
+                "success": f"{origin}/#/dashboard",
+                "failure": f"{origin}/#/cart",
+                "pending": f"{origin}/#/dashboard"
             },
             "auto_return": "approved",
             "statement_descriptor": "BLEESHOP",
@@ -66,32 +66,31 @@ def criar_pagamento():
             "payment_methods": {
                 "installments": 12,
                 "excluded_payment_types": [
-                    {"id": "ticket"} # Removido boleto para focar no Pix/Cartão (opcional)
+                    {"id": "ticket"} # Removendo boleto para agilizar processamento
                 ]
             }
         }
 
-        # 4. Requisição à API oficial
+        # 4. Criar Preferência
         preference_response = sdk.preference().create(preference_data)
         
         if preference_response["status"] >= 400:
             logger.error(f"Erro MP API: {preference_response['response']}")
-            return jsonify({"error": "Erro na API do Mercado Pago"}), preference_response["status"]
+            return jsonify({"error": "Erro na API do Mercado Pago", "details": preference_response["response"]}), preference_response["status"]
 
-        response_body = preference_response["response"]
+        res = preference_response["response"]
 
-        # O link principal de redirecionamento é o init_point
+        # Retorna o ID e os links (init_point é o oficial de produção)
         return jsonify({
-            "preferenceId": response_body["id"],
-            "init_point": response_body["init_point"],
-            "sandbox_init_point": response_body["sandbox_init_point"]
+            "preferenceId": res["id"],
+            "init_point": res["init_point"],
+            "sandbox_init_point": res["sandbox_init_point"]
         })
 
     except Exception as e:
-        logger.error(f"Erro crítico no servidor: {str(e)}")
+        logger.error(f"Falha Interna: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    print("\n🚀 SERVIDOR PYTHON BLEE SHOP ATIVO NA PORTA 3000")
-    print("Acesse http://localhost:3000 para receber as requisições de pagamento\n")
+    print("\n🐝 Blee Backend Python ON na porta 3000")
     app.run(port=3000, debug=True)
