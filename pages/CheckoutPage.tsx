@@ -1,13 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, CheckCircle2, Clock, Loader2, Wallet } from 'lucide-react';
+// Added ShieldCheck to imports to fix compilation error on line 262
+import { CreditCard, Truck, MapPin, CheckCircle2, Clock, Loader2, Wallet, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useCart } from '../CartContext';
 
 const CheckoutPage: React.FC = () => {
   const { cart, cartTotal, clearCart } = useCart();
   const navigate = useNavigate();
-  const [success, setSuccess] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [shippingInfo, setShippingInfo] = useState<{ cost: number; days: string } | null>(null);
@@ -21,52 +21,62 @@ const CheckoutPage: React.FC = () => {
     payment: 'mercadopago'
   });
 
-  if (cart.length === 0 && !success) {
-    navigate('/');
-    return null;
-  }
-
-  const calcularFrete = async () => {
+  // Gatilho automático para busca de CEP
+  useEffect(() => {
     const rawCep = form.cep.replace(/\D/g, '');
-    if (rawCep.length < 8) {
-      alert("Por favor, digite um CEP válido com 8 dígitos.");
-      return;
+    if (rawCep.length === 8) {
+      buscarDadosCep(rawCep);
     }
+  }, [form.cep]);
 
+  const buscarDadosCep = async (cep: string) => {
     setIsCalculating(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      const isMetropolitan = rawCep.startsWith('0');
+      // 1. Busca Endereço via ViaCEP
+      const cepResponse = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const cepData = await cepResponse.json();
+
+      if (cepData.erro) {
+        alert("CEP não encontrado.");
+        setIsCalculating(false);
+        return;
+      }
+
+      // Preenche campos automaticamente
+      setForm(prev => ({
+        ...prev,
+        endereco: `${cepData.logradouro}${cepData.bairro ? `, ${cepData.bairro}` : ''}`,
+        cidade: `${cepData.localidade} - ${cepData.uf}`
+      }));
+
+      // 2. Calcula Frete (Lógica Simulada baseada na região)
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const isMetropolitan = cep.startsWith('0');
       const cost = isMetropolitan ? 14.90 : 28.50;
       const days = isMetropolitan ? "2 a 4 dias úteis" : "5 a 10 dias úteis";
       setShippingInfo({ cost, days });
+
     } catch (error) {
-      console.error("Erro ao calcular frete:", error);
-      alert("Erro ao calcular o frete.");
+      console.error("Erro ao buscar CEP:", error);
+      alert("Erro ao processar dados do CEP.");
     } finally {
       setIsCalculating(false);
     }
   };
 
-  /**
-   * Função principal de finalização de compra integrada com a API dinâmica.
-   */
   const finalizarCompra = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
     if (!shippingInfo) {
-      alert("Por favor, calcule o frete antes de finalizar.");
+      alert("Por favor, informe um CEP válido para calcular o frete.");
       return;
     }
 
     setIsProcessingPayment(true);
     try {
-      // Envia os itens do carrinho e o frete para o servidor criar a preferência real
       const response = await fetch("/api/criar-pagamento", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: cart,
           shipping: shippingInfo,
@@ -80,170 +90,157 @@ const CheckoutPage: React.FC = () => {
       const data = await response.json();
 
       if (data.link) {
-        // Redireciona o usuário para o Checkout Pro do Mercado Pago com os itens REAIS
         window.location.href = data.link;
       } else {
-        alert("Erro ao gerar link de pagamento. Verifique o console.");
-        console.error("Resposta da API sem link:", data);
+        alert("Erro ao gerar link de pagamento.");
       }
     } catch (error) {
-      console.error("Erro na conexão com a API de pagamento:", error);
-      alert("Erro ao conectar com o servidor de pagamento. Verifique se o token MP_ACCESS_TOKEN está configurado.");
+      alert("Erro ao conectar com o servidor de pagamento.");
     } finally {
       setIsProcessingPayment(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-500">
-        <div className="bg-white rounded-3xl p-12 shadow-sm border border-gray-100 max-w-lg mx-auto">
-          <div className="bg-green-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CheckCircle2 size={48} className="text-green-600" />
-          </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-4">Pedido Realizado!</h2>
-          <p className="text-gray-500 mb-10">Obrigado por comprar na Blee Shop. Processaremos seu pedido assim que o pagamento for confirmado.</p>
-          <button 
-            onClick={() => navigate('/')}
-            className="bg-amber-400 text-gray-900 px-10 py-4 rounded-xl font-bold hover:bg-amber-500 transition-all shadow-lg"
-          >
-            Voltar para a Home
-          </button>
-        </div>
-      </div>
-    );
+  if (cart.length === 0) {
+    navigate('/');
+    return null;
   }
 
   const finalTotal = cartTotal + (shippingInfo?.cost || 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-black text-gray-900 mb-10 text-center uppercase tracking-tight">Finalizar Compra</h1>
+      <div className="flex items-center justify-between mb-10">
+        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-amber-500 transition-colors flex items-center space-x-2 font-bold">
+          <ArrowLeft size={18} />
+          <span className="text-xs uppercase tracking-widest">Voltar</span>
+        </button>
+        <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Checkout</h1>
+        <div className="w-20"></div>
+      </div>
 
       <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-start">
-        <form onSubmit={finalizarCompra} className="lg:col-span-8 space-y-12">
+        <form onSubmit={finalizarCompra} className="lg:col-span-8 space-y-10">
           {/* Entrega */}
-          <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex items-center space-x-3 mb-6">
-              <MapPin className="text-amber-500" />
-              <h2 className="text-xl font-black text-gray-900 tracking-tight">Informações de Entrega</h2>
+          <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
+                <MapPin size={22} />
+              </div>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Endereço de Entrega</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Nome Completo</label>
-                <input required type="text" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" placeholder="Ex: João Silva" />
+                <input required type="text" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="Seu nome completo" />
               </div>
+              
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">E-mail</label>
-                <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" placeholder="exemplo@email.com" />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">CEP</label>
-                <div className="flex space-x-2">
-                  <input required type="text" maxLength={9} value={form.cep} onChange={e => setForm({...form, cep: e.target.value})} className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold" placeholder="00000-000" />
-                  <button type="button" onClick={calcularFrete} disabled={isCalculating || form.cep.length < 8} className="bg-gray-900 text-white px-4 py-3 rounded-xl font-black text-[10px] uppercase hover:bg-gray-800 disabled:opacity-50 transition-all flex items-center justify-center min-w-[120px] shadow-md">
-                    {isCalculating ? <Loader2 className="animate-spin" size={16} /> : "Calcular Frete"}
-                  </button>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">CEP (Busca Automática)</label>
+                <div className="relative">
+                  <input required type="text" maxLength={9} value={form.cep} onChange={e => setForm({...form, cep: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-black" placeholder="00000-000" />
+                  {isCalculating && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-amber-500" size={18} />}
                 </div>
               </div>
 
-              {shippingInfo && (
-                <div className="md:col-span-2 bg-amber-50 border border-amber-100 p-4 rounded-2xl flex flex-wrap gap-6 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center space-x-2">
-                    <Truck className="text-amber-600" size={18} />
-                    <span className="text-sm font-black text-amber-900 uppercase">Frete: R$ {shippingInfo.cost.toFixed(2)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="text-amber-600" size={18} />
-                    <span className="text-sm font-bold text-amber-800">Prazo: {shippingInfo.days}</span>
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">E-mail para Rastreio</label>
+                <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="seu@email.com" />
+              </div>
 
               <div className="md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Endereço Completo</label>
-                <input required type="text" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium" placeholder="Rua, número, complemento e bairro" />
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Rua e Bairro</label>
+                <input required type="text" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="Carregando automaticamente..." />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Cidade e UF</label>
+                <input required type="text" value={form.cidade} readOnly className="w-full bg-gray-100 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-gray-500 outline-none" placeholder="Carregando..." />
               </div>
             </div>
+
+            {shippingInfo && (
+              <div className="mt-8 bg-amber-50 border border-amber-100 p-6 rounded-[1.5rem] flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-amber-400 p-3 rounded-xl text-white shadow-sm">
+                    <Truck size={24} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest block">Frete Calculado</span>
+                    <span className="text-sm font-bold text-amber-800">{shippingInfo.days}</span>
+                  </div>
+                </div>
+                <span className="text-lg font-black text-amber-900">R$ {shippingInfo.cost.toFixed(2)}</span>
+              </div>
+            )}
           </section>
 
-          {/* Pagamento */}
-          <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex items-center space-x-3 mb-6">
-              <CreditCard className="text-amber-500" />
-              <h2 className="text-xl font-black text-gray-900 tracking-tight">Pagamento</h2>
+          {/* Pagamento - Fixado em Mercado Pago conforme solicitado */}
+          <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
+                <Wallet size={22} />
+              </div>
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Pagamento Seguro</h2>
             </div>
             
-            <div className="space-y-4">
-              <label className={`flex items-center p-5 border-2 rounded-2xl cursor-pointer transition-all ${form.payment === 'mercadopago' ? 'border-amber-400 bg-amber-50' : 'border-gray-50 hover:border-amber-100'}`}>
-                <input type="radio" name="payment" checked={form.payment === 'mercadopago'} onChange={() => setForm({...form, payment: 'mercadopago'})} className="hidden" />
-                <div className="flex-1 flex items-center">
-                  <div className={`p-3 rounded-xl mr-4 ${form.payment === 'mercadopago' ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                    <Wallet size={20} />
-                  </div>
-                  <div>
-                    <p className="font-black text-gray-900 text-sm">Mercado Pago</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Cartão, Pix ou Saldo (Checkout Pro)</p>
-                  </div>
+            <div className="bg-amber-50 border-2 border-amber-400 p-6 rounded-3xl flex items-center justify-between shadow-lg shadow-amber-100">
+              <div className="flex items-center space-x-4">
+                <div className="bg-white p-3 rounded-2xl shadow-sm">
+                  <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-0.png" alt="Mercado Pago" className="h-6 object-contain" />
                 </div>
-                {form.payment === 'mercadopago' && <CheckCircle2 size={24} className="text-amber-500" />}
-              </label>
-
-              <label className={`flex items-center p-5 border-2 rounded-2xl cursor-pointer transition-all ${form.payment === 'pix' ? 'border-amber-400 bg-amber-50' : 'border-gray-50 hover:border-amber-100'}`}>
-                <input type="radio" name="payment" checked={form.payment === 'pix'} onChange={() => setForm({...form, payment: 'pix'})} className="hidden" />
-                <div className="flex-1 flex items-center">
-                  <div className={`p-3 rounded-xl mr-4 font-black text-sm flex items-center justify-center ${form.payment === 'pix' ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                    PIX
-                  </div>
-                  <div>
-                    <p className="font-black text-gray-900 text-sm">Pix Direto</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Pagamento instantâneo via QR Code</p>
-                  </div>
+                <div>
+                  <p className="font-black text-gray-900 text-sm">Mercado Pago Checkout Pro</p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Cartão, Pix, Boleto ou Saldo</p>
                 </div>
-                {form.payment === 'pix' && <CheckCircle2 size={24} className="text-amber-500" />}
-              </label>
+              </div>
+              <CheckCircle2 size={28} className="text-amber-500" />
             </div>
+            <p className="mt-6 text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              Você será redirecionado para o ambiente seguro do Mercado Pago
+            </p>
           </section>
 
-          <div className="sticky bottom-4 lg:hidden">
-             <button type="submit" disabled={!shippingInfo || isProcessingPayment} className="w-full bg-amber-400 text-gray-900 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-amber-200/50 disabled:opacity-50 active:scale-95 transition-all">
-                {isProcessingPayment ? <Loader2 className="animate-spin mx-auto" /> : "FAZER PEDIDO"}
-             </button>
-          </div>
+          <button type="submit" disabled={!shippingInfo || isProcessingPayment} className="lg:hidden w-full bg-amber-400 text-gray-900 py-6 rounded-2xl font-black text-lg shadow-2xl shadow-amber-200/50 disabled:opacity-50 active:scale-95 transition-all">
+            {isProcessingPayment ? <Loader2 className="animate-spin mx-auto" /> : "FINALIZAR E PAGAR"}
+          </button>
         </form>
 
         {/* Resumo */}
         <div className="lg:col-span-4 mt-12 lg:mt-0">
-          <div className="bg-gray-900 text-white rounded-[2.5rem] p-8 sticky top-24 shadow-2xl shadow-gray-200">
-            <h3 className="text-xl font-black mb-8 uppercase tracking-widest text-amber-400">Resumo</h3>
+          <div className="bg-gray-900 text-white rounded-[3rem] p-8 md:p-10 sticky top-24 shadow-2xl shadow-gray-200">
+            <h3 className="text-xl font-black mb-10 uppercase tracking-widest text-amber-400 border-b border-gray-800 pb-6">Meu Pedido</h3>
             
-            <div className="space-y-5 mb-8 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-6 mb-10 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {cart.map(item => (
-                <div key={item.id} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center">
-                    <img src={item.image} alt="" className="w-12 h-12 rounded-xl object-cover mr-4 border border-gray-800" />
+                <div key={item.id} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <img src={item.image} alt="" className="w-14 h-14 rounded-2xl object-cover border border-gray-800" />
+                      <span className="absolute -top-2 -right-2 bg-amber-500 text-gray-900 text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-gray-900">{item.quantity}</span>
+                    </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-gray-100 truncate w-32">{item.name}</p>
-                      <p className="text-gray-500 text-[10px] font-black uppercase">Qtd: {item.quantity}</p>
+                      <p className="font-bold text-gray-100 text-sm truncate w-32">{item.name}</p>
+                      <p className="text-gray-500 text-[9px] font-black uppercase tracking-widest">{item.category}</p>
                     </div>
                   </div>
-                  <p className="font-black text-gray-100">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-black text-gray-100 text-sm">R$ {(item.price * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-gray-800 pt-6 space-y-4 mb-8">
-              <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-gray-500">
-                <span>Subtotal</span>
+            <div className="border-t border-gray-800 pt-8 space-y-5 mb-10">
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+                <span>Itens</span>
                 <span>R$ {cartTotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-gray-500">
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
                 <span>Frete</span>
                 <span>{shippingInfo ? `R$ ${shippingInfo.cost.toFixed(2)}` : '--'}</span>
               </div>
-              <div className="flex justify-between text-2xl font-black text-white pt-2 border-t border-gray-800/50">
-                <span className="text-lg">TOTAL</span>
+              <div className="flex justify-between text-3xl font-black text-white pt-4 border-t border-gray-800">
+                <span className="text-sm self-center">TOTAL</span>
                 <span className="text-amber-400">R$ {finalTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
@@ -251,15 +248,22 @@ const CheckoutPage: React.FC = () => {
             <button 
               onClick={() => finalizarCompra()}
               disabled={!shippingInfo || isProcessingPayment}
-              className={`w-full py-5 rounded-2xl font-black text-base transition-all flex items-center justify-center space-x-3 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed bg-amber-400 hover:bg-amber-500 text-gray-900 active:scale-95`}
+              className="w-full py-6 rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center space-x-3 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed bg-amber-400 hover:bg-white text-gray-900 active:scale-95"
             >
               {isProcessingPayment ? (
                 <Loader2 className="animate-spin" size={24} />
               ) : (
-                <span>FAZER PEDIDO</span>
+                <>
+                  <CreditCard size={18} />
+                  <span>Pagar Agora</span>
+                </>
               )}
             </button>
-            <p className="text-center text-[9px] text-gray-500 mt-6 font-black uppercase tracking-[0.2em] opacity-50">Checkout Seguro via SSL</p>
+            <div className="flex items-center justify-center space-x-2 mt-8 opacity-40 grayscale">
+               {/* Fixed missing ShieldCheck component by importing it from lucide-react */}
+               <ShieldCheck size={14} />
+               <p className="text-[9px] font-black uppercase tracking-[0.2em]">Compra 100% Protegida</p>
+            </div>
           </div>
         </div>
       </div>
