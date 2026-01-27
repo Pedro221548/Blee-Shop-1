@@ -22,33 +22,32 @@ def criar_pagamento():
         items_req = data.get('items', [])
         shipping_price = data.get('shippingPrice', 0)
         customer = data.get('customer', {})
-        # Recebe a origem do frontend para garantir back_urls corretas
-        origin = data.get('origin', 'https://bleeshop.web.app')
+        origin = data.get('origin', 'https://blee-shop-1.vercel.app')
 
-        logger.info(f"Gerando preferência para: {customer.get('email')} vindo de {origin}")
+        logger.info(f"Gerando preferência de checkout para: {customer.get('email')}")
 
-        # 1. Montagem rigorosa dos itens
+        # 1. Montagem dos itens (conforme seu exemplo, garantindo float no unit_price)
         preference_items = []
         for item in items_req:
             preference_items.append({
-                "id": str(item.get('title'))[:20], # ID curto
+                "id": str(item.get('id', '6')),
                 "title": str(item.get('title')),
                 "quantity": int(item.get('quantity', 1)),
                 "currency_id": "BRL",
-                "unit_price": round(float(item.get('unit_price')), 2)
+                "unit_price": float(item.get('unit_price', 1.0))
             })
 
-        # 2. Adicionar frete como item se existir
+        # 2. Adicionar frete se houver
         if shipping_price > 0:
             preference_items.append({
-                "id": "shipping-fee",
-                "title": "Frete e Entrega Blee Shop",
+                "id": "shipping",
+                "title": "Frete Blee Shop",
                 "quantity": 1,
                 "currency_id": "BRL",
-                "unit_price": round(float(shipping_price), 2)
+                "unit_price": float(shipping_price)
             })
 
-        # 3. Definição da Preferência (Checkout Pro)
+        # 3. Configuração da Preference (Baseado no seu snippet de teste)
         preference_data = {
             "items": preference_items,
             "payer": {
@@ -56,31 +55,30 @@ def criar_pagamento():
                 "email": customer.get('email', ''),
             },
             "back_urls": {
-                "success": f"{origin}/#/dashboard",
-                "failure": f"{origin}/#/cart",
-                "pending": f"{origin}/#/dashboard"
+                "success": f"{origin}/#/product/1769493091809compracerta",
+                "failure": f"{origin}/#/product/1769493091809compraerrada",
+                "pending": f"{origin}/#/product/1769493091809compraerrada"
             },
             "auto_return": "approved",
             "statement_descriptor": "BLEESHOP",
-            "external_reference": f"ORDER_{customer.get('email')}",
             "payment_methods": {
                 "installments": 12,
                 "excluded_payment_types": [
-                    {"id": "ticket"} # Removendo boleto para agilizar processamento
+                    {"id": "ticket"} # Opcional: remover boleto
                 ]
             }
         }
 
-        # 4. Criar Preferência
+        # 4. Criar Preferência na SDK
         preference_response = sdk.preference().create(preference_data)
         
         if preference_response["status"] >= 400:
             logger.error(f"Erro MP API: {preference_response['response']}")
-            return jsonify({"error": "Erro na API do Mercado Pago", "details": preference_response["response"]}), preference_response["status"]
+            return jsonify({"error": "Falha na comunicação com Mercado Pago"}), preference_response["status"]
 
         res = preference_response["response"]
 
-        # Retorna o ID e os links (init_point é o oficial de produção)
+        # Retornamos o link de redirecionamento (init_point)
         return jsonify({
             "preferenceId": res["id"],
             "init_point": res["init_point"],
@@ -88,9 +86,10 @@ def criar_pagamento():
         })
 
     except Exception as e:
-        logger.error(f"Falha Interna: {str(e)}")
+        logger.error(f"Falha Interna no Servidor: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    print("\n🐝 Blee Backend Python ON na porta 3000")
+    print("\n🐝 [Blee Shop] Servidor Python Ativo")
+    print("Pronto para gerar links de redirecionamento Mercado Pago na porta 3000\n")
     app.run(port=3000, debug=True)
