@@ -19,10 +19,6 @@ export interface Product {
   reviewsList?: Review[];
   mlUrl?: string;
   shopeeUrl?: string;
-  width?: number;   // em cm
-  height?: number;  // em cm
-  length?: number;  // em cm
-  weight?: number;  // em kg
 }
 
 export interface PortfolioItem {
@@ -33,26 +29,20 @@ export interface PortfolioItem {
   createdAt: string;
 }
 
-export interface ShippingOption {
-  id: string;
-  name: string;
-  price: number;
-  delivery_time: number;
-  company: string;
-}
-
 export interface CartItem extends Product {
   quantity: number;
 }
 
-export interface AddressInfo {
-  logradouro: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
-  numero: string;
-  complemento: string;
-  destinatario: string;
+export interface CustomOrder {
+  id: string;
+  type: '3d' | 'mug';
+  description: string;
+  phone: string;
+  image?: string;
+  customerName: string;
+  customerEmail: string;
+  status: 'pending' | 'contacted' | 'finished';
+  createdAt: string;
 }
 
 export interface CartContextType {
@@ -64,12 +54,6 @@ export interface CartContextType {
   cartTotal: number;
   cartCount: number;
   notification: string | null;
-  selectedShipping: ShippingOption | null;
-  setSelectedShipping: (option: ShippingOption | null) => void;
-  cep: string;
-  setCep: (cep: string) => void;
-  address: AddressInfo;
-  setAddress: (address: AddressInfo) => void;
 }
 
 export interface StoreSettings {
@@ -98,16 +82,4 @@ export interface ProductContextType {
   addPortfolioItem: (item: Omit<PortfolioItem, 'id' | 'createdAt'>) => void;
   updatePortfolioItem: (item: PortfolioItem) => void;
   deletePortfolioItem: (id: string) => void;
-}
-
-export interface CustomOrder {
-  id: string;
-  type: '3d' | 'mug';
-  description: string;
-  phone: string;
-  image?: string;
-  customerName: string;
-  customerEmail: string;
-  status: 'pending' | 'contacted' | 'finished';
-  createdAt: string;
 }

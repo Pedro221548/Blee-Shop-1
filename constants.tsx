@@ -3,21 +3,6 @@ import { Product } from './types';
 
 export const PRODUCTS: Product[] = [
   {
-    id: 999,
-    name: "Produto Teste Mercado Pago",
-    description: "Item simbólico para testar o fluxo de pagamento e cálculo de frete. Valor real de apenas 1 Real.",
-    price: 1.00,
-    category: "Testes",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&h=600&auto=format&fit=crop",
-    rating: 5.0,
-    reviews: 0,
-    width: 15,
-    height: 5,
-    length: 15,
-    weight: 0.1,
-    mlUrl: "https://www.mercadolivre.com.br"
-  },
-  {
     id: 1,
     name: "Headphone Premium Wireless",
     description: "Som cristalino com cancelamento de ruído ativo e 40 horas de bateria.",
@@ -27,11 +12,7 @@ export const PRODUCTS: Product[] = [
     rating: 4.8,
     reviews: 124,
     mlUrl: "https://www.mercadolivre.com.br",
-    shopeeUrl: "https://shopee.com.br",
-    width: 20,
-    height: 10,
-    length: 20,
-    weight: 0.8
+    shopeeUrl: "https://shopee.com.br"
   },
   {
     id: 2,
@@ -43,10 +24,17 @@ export const PRODUCTS: Product[] = [
     rating: 4.5,
     reviews: 89,
     mlUrl: "https://www.mercadolivre.com.br",
-    shopeeUrl: "https://shopee.com.br",
-    width: 12,
-    height: 8,
-    length: 12,
-    weight: 0.3
+    shopeeUrl: "https://shopee.com.br"
+  },
+  {
+    id: 3,
+    name: "Mochila Tech Urban",
+    description: "Design minimalista com compartimento acolchoado para notebook de até 16 polegadas.",
+    price: 349.90,
+    category: "Moda",
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=600&h=600&auto=format&fit=crop",
+    rating: 4.7,
+    reviews: 210,
+    mlUrl: "https://www.mercadolivre.com.br"
   }
 ];

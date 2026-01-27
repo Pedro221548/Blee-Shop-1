@@ -1,11 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, Eye, X, Maximize, ShoppingBag, ArrowRight, CheckCircle2, Info, RotateCw, Move, Sparkles, Loader2, Download, Cpu, Zap, Lightbulb, MousePointer2, Layers } from 'lucide-react';
+import { Camera, Upload, Eye, X, Maximize, ShoppingBag, ArrowRight, CheckCircle2, Info, RotateCw, Move, Sparkles, Loader2, Download, Cpu, Zap, Lightbulb } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { useProducts } from '../ProductContext';
 import { Product } from '../types';
-// Added missing Link import from react-router-dom
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { generateAIComposite } from '../geminiService';
 
 const SimulatorPage: React.FC = () => {
@@ -30,7 +29,7 @@ const SimulatorPage: React.FC = () => {
     "Ajustando as sombras do 3D...",
     "Polinizando a imagem com realismo...",
     "George está finalizando o render...",
-    "Integrando o product na sua casa..."
+    "Integrando o produto na sua casa..."
   ];
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,129 +99,90 @@ const SimulatorPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20 animate-fade-in">
-        {/* Banner Hero Tech Modernizado */}
-        <section className="relative pt-10 md:pt-16 pb-12 overflow-hidden px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="bg-gray-900 rounded-[3.5rem] p-8 md:p-16 lg:p-24 text-center shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border border-gray-800 relative overflow-hidden">
-               {/* Pattern de Colmeia em Background */}
-               <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45v-30z' fill-rule='evenodd' fill='%23ffffff'/%3E%3C/svg%3E")`, backgroundSize: '60px' }}></div>
-               
-               {/* Gradiente de Luz Central */}
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-radial-gradient from-amber-500/10 to-transparent pointer-events-none"></div>
+      <div className="min-h-screen bg-gray-50 pb-20">
+        {/* Banner Hero Tech */}
+        <section className="relative pt-12 md:pt-20 pb-16 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl z-0">
+             <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/20 rounded-full blur-[100px]"></div>
+             <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]"></div>
+          </div>
 
-               <div className="relative z-10 flex flex-col items-center">
-                 <div className="inline-flex items-center space-x-3 bg-white/5 border border-white/10 px-6 py-2.5 rounded-full mb-10 backdrop-blur-md animate-zoom-in">
-                   <div className="flex -space-x-2">
-                     <div className="w-5 h-5 rounded-full bg-amber-400 border-2 border-gray-900"></div>
-                     <div className="w-5 h-5 rounded-full bg-indigo-500 border-2 border-gray-900"></div>
-                   </div>
-                   <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.4em]">Powered by Gemini 2.5</span>
-                 </div>
+          <div className="max-w-6xl mx-auto px-4 relative z-10">
+            <div className="bg-gray-900 rounded-[3rem] p-8 md:p-20 text-center shadow-2xl shadow-gray-200 border border-gray-800 relative overflow-hidden">
+               {/* Decorações Flutuantes */}
+               <div className="absolute top-10 left-10 text-amber-400/20 animate-pulse hidden md:block"><Cpu size={48} /></div>
+               <div className="absolute bottom-10 right-10 text-amber-400/20 animate-bounce-slow hidden md:block"><Sparkles size={48} /></div>
 
-                 <h1 className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9]">
-                   BeeView<br/><span className="text-amber-400">Simulator.</span>
-                 </h1>
-                 
-                 <p className="text-lg md:text-2xl text-gray-300 max-w-3xl mx-auto mb-14 font-medium leading-relaxed opacity-90">
-                   Capture o seu ambiente e veja a mágica da <span className="text-white font-black underline decoration-amber-400 decoration-4 underline-offset-8">IA Generativa</span> fundir nossos produtos com a sua realidade.
-                 </p>
-
-                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <button 
-                      onClick={() => navigate('/login')}
-                      className="w-full sm:w-auto bg-amber-400 text-gray-900 px-14 py-6 rounded-3xl font-black text-lg shadow-[0_20px_40px_-10px_rgba(251,191,36,0.3)] hover:bg-white hover:scale-105 transition-all active:scale-95 flex items-center justify-center space-x-4 group"
-                    >
-                      <span>Simular Agora com IA</span>
-                      <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
-                    </button>
-                    <Link 
-                      to="/produtos" 
-                      className="text-white/60 hover:text-white font-bold text-sm uppercase tracking-widest px-8 py-4 transition-colors"
-                    >
-                      Explorar Catálogo
-                    </Link>
-                 </div>
+               <div className="inline-flex items-center space-x-2 bg-amber-400/10 border border-amber-400/20 px-4 py-2 rounded-full text-amber-400 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+                 <Zap size={14} />
+                 <span>O Futuro da Decoração</span>
                </div>
+
+               <h1 className="text-4xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.1]">
+                 BeeView <span className="text-amber-400 italic">Simulator</span>
+               </h1>
+               
+               <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
+                 Nossa tecnologia de <span className="text-white font-black underline decoration-amber-400 underline-offset-4">Realismo Generativo</span> coloca seus produtos favoritos diretamente na sua sala com sombras e luzes reais.
+               </p>
+
+               <button 
+                 onClick={() => navigate('/login')}
+                 className="bg-white text-gray-900 px-12 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:bg-amber-400 transition-all active:scale-95 flex items-center justify-center space-x-4 mx-auto group"
+               >
+                 <span>Acesse para Começar</span>
+                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+               </button>
             </div>
           </div>
         </section>
 
-        {/* Seção Explicativa Visual */}
-        <section className="max-w-7xl mx-auto px-6 py-20">
-           <div className="text-center mb-20">
-              <h2 className="text-xs font-black text-amber-500 uppercase tracking-[0.5em] mb-4">Fluxo de Trabalho</h2>
-              <h3 className="text-4xl font-black text-gray-900 tracking-tight">Três passos para o realismo total</h3>
-           </div>
-
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-              {/* Linhas Conectoras (Desktop) */}
-              <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gray-200 -z-10 translate-y-[-50px]"></div>
-
-              <div className="relative flex flex-col items-center text-center group">
-                <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-amber-400 transition-all duration-500">
-                  <Camera className="text-amber-500 group-hover:text-gray-900 transition-colors" size={40} />
-                  <div className="absolute -top-3 -right-3 w-10 h-10 bg-gray-900 text-white rounded-2xl flex items-center justify-center font-black text-lg shadow-lg">1</div>
+        {/* Infográfico de Passos */}
+        <section className="max-w-7xl mx-auto px-4 py-12">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-400 transition-colors">
+                  <Camera className="text-amber-500 group-hover:text-gray-900 transition-colors" size={32} />
                 </div>
-                <h4 className="text-xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Captura Real</h4>
-                <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-xs">
-                  Você tira uma foto do seu cômodo (mesa, prateleira ou chão). A IA lerá a luz e as texturas.
-                </p>
+                <div className="flex items-center space-x-3 mb-3">
+                  <span className="text-3xl font-black text-gray-100 group-hover:text-amber-100 transition-colors">01</span>
+                  <h3 className="text-xl font-black text-gray-900">Captura</h3>
+                </div>
+                <p className="text-sm text-gray-500 font-medium leading-relaxed">Tire uma foto do local real. Use boa iluminação para que nossas abelhas IA consigam ler o ambiente.</p>
               </div>
 
-              <div className="relative flex flex-col items-center text-center group">
-                <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-amber-400 transition-all duration-500">
-                  <MousePointer2 className="text-amber-500 group-hover:text-gray-900 transition-colors" size={40} />
-                  <div className="absolute -top-3 -right-3 w-10 h-10 bg-gray-900 text-white rounded-2xl flex items-center justify-center font-black text-lg shadow-lg">2</div>
+              <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-400 transition-colors">
+                  <Move className="text-amber-500 group-hover:text-gray-900 transition-colors" size={32} />
                 </div>
-                <h4 className="text-xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Posicionamento</h4>
-                <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-xs">
-                  Escolha o item Bee e arraste para o local desejado. Ajuste a escala e rotação manualmente.
-                </p>
+                <div className="flex items-center space-x-3 mb-3">
+                  <span className="text-3xl font-black text-gray-100 group-hover:text-amber-100 transition-colors">02</span>
+                  <h3 className="text-xl font-black text-gray-900">Posição</h3>
+                </div>
+                <p className="text-sm text-gray-500 font-medium leading-relaxed">Escolha um item e posicione-o na superfície desejada. Você controla a escala e a rotação manualmente.</p>
               </div>
 
-              <div className="relative flex flex-col items-center text-center group">
-                <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl flex items-center justify-center mb-8 border border-gray-100 group-hover:scale-110 group-hover:bg-amber-400 transition-all duration-500">
-                  <Layers className="text-amber-500 group-hover:text-gray-900 transition-colors" size={40} />
-                  <div className="absolute -top-3 -right-3 w-10 h-10 bg-gray-900 text-white rounded-2xl flex items-center justify-center font-black text-lg shadow-lg">3</div>
+              <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-400 transition-colors">
+                  <Sparkles className="text-amber-500 group-hover:text-gray-900 transition-colors" size={32} />
                 </div>
-                <h4 className="text-xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Polinização IA</h4>
-                <p className="text-gray-500 text-sm font-medium leading-relaxed max-w-xs">
-                  Nossa IA processa a fusão, criando sombras de contato e reflexos reais. O resultado é uma foto impossível!
-                </p>
+                <div className="flex items-center space-x-3 mb-3">
+                  <span className="text-3xl font-black text-gray-100 group-hover:text-amber-100 transition-colors">03</span>
+                  <h3 className="text-xl font-black text-gray-900">Polinização</h3>
+                </div>
+                <p className="text-sm text-gray-500 font-medium leading-relaxed">Clique no botão IA para gerar uma versão realista onde o produto se funde ao cenário com sombras reais.</p>
               </div>
            </div>
         </section>
 
-        {/* Banner de Diferenciação */}
-        <section className="max-w-6xl mx-auto px-6 mt-12 mb-20">
-          <div className="bg-amber-50 border border-amber-200 rounded-[3rem] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12">
-             <div className="flex-1 space-y-6">
-                <div className="inline-block bg-amber-400 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">Diferencial Blee</div>
-                <h3 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter leading-tight">Não é apenas um adesivo na tela.</h3>
-                <p className="text-gray-600 font-medium leading-relaxed">
-                  Diferente de simuladores comuns que apenas sobrepõem o produto, o **BeeView IA** reconstrói o objeto dentro do seu cenário, corrigindo perspectiva e criando sombras que tocam a sua mesa.
-                </p>
-                <div className="flex items-center space-x-6 pt-4">
-                   <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sombras Reais</span>
-                   </div>
-                   <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reflexos Dinâmicos</span>
-                   </div>
-                </div>
-             </div>
-             <div className="w-full md:w-80 aspect-square bg-gray-900 rounded-[2.5rem] shadow-2xl overflow-hidden relative group cursor-pointer">
-                <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" />
-                <div className="absolute inset-0 flex items-center justify-center p-8 text-center">
-                   <div>
-                      <Sparkles className="text-amber-400 mx-auto mb-4" size={48} />
-                      <p className="text-white font-black text-xl uppercase tracking-tighter">O Próximo Nível da Simulação</p>
-                   </div>
-                </div>
-             </div>
+        {/* Dica do Especialista */}
+        <section className="max-w-4xl mx-auto px-4 mt-12">
+          <div className="bg-amber-400 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-amber-100 border border-amber-300">
+             <div className="bg-white/30 p-4 rounded-2xl shrink-0"><Lightbulb size={32} className="text-white" /></div>
+             <p className="text-sm md:text-base font-black text-gray-900 leading-tight text-center md:text-left">
+               "Nossa IA analisa texturas e luzes. Quanto melhor for a foto, mais impressionante será o resultado final da simulação!" 
+               <span className="block text-[10px] mt-2 opacity-60">— George, Fundador da Blee Shop</span>
+             </p>
           </div>
         </section>
       </div>

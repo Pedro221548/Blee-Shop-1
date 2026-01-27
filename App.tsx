@@ -15,8 +15,9 @@ import ProductsGallery from './pages/ProductsGallery';
 import SimulatorPage from './pages/SimulatorPage';
 import { ProductProvider, useProducts } from './ProductContext';
 import { AuthProvider, useAuth } from './AuthContext';
-import { CartProvider } from './CartContext';
+import { CartProvider, useCart } from './CartContext';
 import BeeLogo from './components/BeeLogo';
+import { CheckCircle2, AlertCircle, Clock, ShoppingCart, X } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode, adminOnly?: boolean }> = ({ children, adminOnly = false }) => {
   const { isResponsible, isAuthenticated } = useAuth();
@@ -30,12 +31,51 @@ const DashboardRoute: React.FC = () => {
   return isAuthenticated ? <UserDashboard /> : <CustomOrderLanding />;
 };
 
+const StatusPage: React.FC<{ type: 'success' | 'error' | 'pending' }> = ({ type }) => {
+  const content = {
+    success: { title: 'Pagamento Aprovado!', icon: <CheckCircle2 size={64} className="text-green-500" />, color: 'text-green-600', msg: 'Sua compra foi confirmada. Em breve você receberá os detalhes no e-mail.' },
+    error: { title: 'Ops! Ocorreu um erro.', icon: <AlertCircle size={64} className="text-red-500" />, color: 'text-red-600', msg: 'Não conseguimos processar seu pagamento. Por favor, tente novamente.' },
+    pending: { title: 'Pagamento Pendente', icon: <Clock size={64} className="text-amber-500" />, color: 'text-amber-600', msg: 'Estamos aguardando a confirmação do seu pagamento.' }
+  }[type];
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-20 text-center animate-in zoom-in duration-500">
+      <div className="bg-white rounded-[3rem] p-12 shadow-xl border border-gray-100 max-w-lg mx-auto">
+        <div className="flex justify-center mb-8">{content.icon}</div>
+        <h2 className={`text-3xl font-black mb-4 uppercase tracking-tight ${content.color}`}>{content.title}</h2>
+        <p className="text-gray-500 mb-10 font-medium">{content.msg}</p>
+        <Link to="/" className="inline-block bg-gray-900 text-white px-10 py-4 rounded-2xl font-black hover:bg-amber-500 transition-all shadow-lg">
+          Voltar para a Home
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+const NotificationToast: React.FC = () => {
+  const { notification } = useCart();
+  
+  if (!notification) return null;
+
+  return (
+    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-500">
+      <div className="bg-gray-900 text-white px-8 py-5 rounded-[2rem] shadow-2xl flex items-center space-x-4 border border-gray-800">
+        <div className="bg-amber-400 p-2 rounded-xl text-gray-900 shadow-lg animate-bounce">
+          <ShoppingCart size={18} />
+        </div>
+        <span className="text-sm font-black uppercase tracking-tight">{notification}</span>
+      </div>
+    </div>
+  );
+};
+
 const AppContent: React.FC = () => {
   const { settings } = useProducts();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 relative">
       <Navbar />
+      <NotificationToast />
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -47,6 +87,9 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path="/produtos" element={<ProductsGallery />} />
           <Route path="/simulador" element={<SimulatorPage />} />
+          <Route path="/pedido-sucesso" element={<StatusPage type="success" />} />
+          <Route path="/pedido-erro" element={<StatusPage type="error" />} />
+          <Route path="/pedido-pendente" element={<StatusPage type="pending" />} />
           <Route path="/admin" element={
             <ProtectedRoute adminOnly>
               <AdminPage />
