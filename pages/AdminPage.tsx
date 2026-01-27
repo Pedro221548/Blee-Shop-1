@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useProducts } from '../ProductContext';
 import { useAuth } from '../AuthContext';
-import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle, Share2, Globe, Instagram as InstagramIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CustomOrder, PortfolioItem } from '../types';
 
@@ -31,7 +31,7 @@ const AdminPage: React.FC = () => {
   } = useProducts();
   
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'products' | 'branding' | 'orders' | 'portfolio'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'branding' | 'orders' | 'portfolio' | 'contacts'>('products');
   const [feedback, setFeedback] = useState<string | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   
@@ -226,6 +226,13 @@ const AdminPage: React.FC = () => {
           )}
         </button>
         <button 
+          onClick={() => setActiveTab('contacts')}
+          className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'contacts' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+        >
+          <Share2 size={18} />
+          <span>Redes Sociais</span>
+        </button>
+        <button 
           onClick={() => setActiveTab('branding')}
           className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'branding' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
         >
@@ -233,6 +240,73 @@ const AdminPage: React.FC = () => {
           <span>Visual</span>
         </button>
       </div>
+
+      {activeTab === 'contacts' && (
+        <div className="bg-white border border-gray-100 rounded-[2.5rem] p-10 shadow-sm animate-slide-up">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center">
+              <Share2 className="mr-3 text-amber-500" size={24} />
+              Canais de Contato e Redes
+            </h2>
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <Phone size={14} className="text-green-500" /> WhatsApp
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: 5511999999999"
+                    value={settings.whatsapp || ''}
+                    onChange={(e) => updateSettings({...settings, whatsapp: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                  <p className="text-[10px] text-gray-400 px-2 italic">Apenas números com DDD e código do país.</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <InstagramIcon size={14} className="text-pink-500" /> Link Instagram
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="https://instagram.com/seuusuario"
+                    value={settings.instagram || ''}
+                    onChange={(e) => updateSettings({...settings, instagram: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <Globe size={14} className="text-orange-500" /> Link Shopee
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="Link da sua loja na Shopee"
+                    value={settings.shopee || ''}
+                    onChange={(e) => updateSettings({...settings, shopee: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <ShoppingBag size={14} className="text-blue-500" /> Link Mercado Livre
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="Link da sua loja no Mercado Livre"
+                    value={settings.mercadolivre || ''}
+                    onChange={(e) => updateSettings({...settings, mercadolivre: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+              </div>
+              <div className="pt-6 border-t border-gray-50">
+                <p className="text-xs text-gray-400 font-medium">Esses links serão exibidos na página de Contato e no rodapé do site.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === 'portfolio' && (
         <div className="space-y-6 animate-slide-up">

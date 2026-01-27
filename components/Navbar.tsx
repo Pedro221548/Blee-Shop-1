@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box, Eye } from 'lucide-react';
+import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box, Eye, Phone } from 'lucide-react';
 import BeeLogo from './BeeLogo';
 import { useAuth } from '../AuthContext';
 import { useCart } from '../CartContext';
@@ -85,6 +85,7 @@ const Navbar: React.FC = () => {
             </Link>
             <Link to="/dashboard" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Encomendas 3D</Link>
             <Link to="/produtos" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Portifólio</Link>
+            <Link to="/contato" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Contato</Link>
             {isResponsible && (
               <Link to="/admin" className="text-amber-600 hover:text-amber-700 font-black flex items-center space-x-1">
                 <Settings size={16} />
@@ -168,7 +169,7 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Portal para o Menu Mobile - Correção definitiva de z-index e visibilidade */}
+      {/* Portal para o Menu Mobile */}
       {isMobileMenuOpen && createPortal(
         <div className="fixed inset-0 z-[10000] md:hidden">
           {/* Backdrop Escuro Sólido */}
@@ -177,7 +178,7 @@ const Navbar: React.FC = () => {
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
           
-          {/* Menu Panel - Garantindo h-screen e fundo branco sólido */}
+          {/* Menu Panel */}
           <div className="fixed top-0 right-0 bottom-0 w-[85%] max-w-[320px] bg-white shadow-2xl flex flex-col z-[10001] animate-slide-in-right overflow-hidden">
             
             {/* Header do Menu */}
@@ -194,7 +195,7 @@ const Navbar: React.FC = () => {
               </button>
             </div>
 
-            {/* Links da Lista - bg-white sólido para evitar transparência */}
+            {/* Links da Lista */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-white">
               <button 
                 onClick={() => navigateAndClose('/')}
@@ -226,6 +227,14 @@ const Navbar: React.FC = () => {
               >
                 <Image size={20} className="text-amber-500" />
                 <span className="text-sm">Portifólio</span>
+              </button>
+
+              <button 
+                onClick={() => navigateAndClose('/contato')}
+                className="w-full flex items-center space-x-4 p-4 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
+              >
+                <Phone size={20} className="text-amber-500" />
+                <span className="text-sm">Contato</span>
               </button>
 
               {isResponsible && (

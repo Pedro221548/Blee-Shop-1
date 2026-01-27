@@ -13,6 +13,7 @@ import InfoPage from './pages/InfoPage';
 import CustomOrderLanding from './pages/CustomOrderLanding';
 import ProductsGallery from './pages/ProductsGallery';
 import SimulatorPage from './pages/SimulatorPage';
+import ContactPage from './pages/ContactPage';
 import { ProductProvider, useProducts } from './ProductContext';
 import { AuthProvider, useAuth } from './AuthContext';
 import { CartProvider, useCart } from './CartContext';
@@ -87,6 +88,7 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path="/produtos" element={<ProductsGallery />} />
           <Route path="/simulador" element={<SimulatorPage />} />
+          <Route path="/contato" element={<ContactPage />} />
           <Route path="/pedido-sucesso" element={<StatusPage type="success" />} />
           <Route path="/pedido-erro" element={<StatusPage type="error" />} />
           <Route path="/pedido-pendente" element={<StatusPage type="pending" />} />
@@ -120,14 +122,15 @@ const AppContent: React.FC = () => {
                 <li><Link to="/info/como-funciona" className="hover:text-amber-600 transition-colors">Como Funciona</Link></li>
                 <li><Link to="/info/aviso-legal" className="hover:text-amber-600 transition-colors">Aviso Legal</Link></li>
                 <li><Link to="/info/privacidade" className="hover:text-amber-600 transition-colors">Privacidade</Link></li>
+                <li><Link to="/contato" className="hover:text-amber-600 transition-colors">Central de Contato</Link></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-50 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest gap-4">
             <p>&copy; 2024 {settings.storeName}. Todos os links levam a lojas oficiais parceiras.</p>
             <div className="flex space-x-6">
-              <span>Mercado Livre Oficial</span>
-              <span>Shopee Verificado</span>
+              {settings.mercadolivre && <a href={settings.mercadolivre} target="_blank" rel="noopener">Mercado Livre Oficial</a>}
+              {settings.shopee && <a href={settings.shopee} target="_blank" rel="noopener">Shopee Verificado</a>}
             </div>
           </div>
         </div>

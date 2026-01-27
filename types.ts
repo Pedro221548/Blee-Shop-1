@@ -63,6 +63,10 @@ export interface StoreSettings {
   heroImageUrl: string;
   storeName: string;
   storeTagline: string;
+  whatsapp?: string;
+  instagram?: string;
+  shopee?: string;
+  mercadolivre?: string;
 }
 
 export interface ProductContextType {

@@ -24,7 +24,11 @@ const DEFAULT_SETTINGS: StoreSettings = {
   heroDescription: "Bem-vindo à oficina da Blee Shop. Somos especialistas em transformar ideias em realidade através da impressão 3D e canecas personalizadas. Explore nossas criações próprias e nossa curadoria exclusiva de tecnologia.",
   heroImageUrl: "https://img.odcdn.com.br/wp-content/uploads/2024/07/imagem_2024-07-29_125616737.png",
   storeName: "Blee Shop",
-  storeTagline: "Sua oficina de tecnologia e personalização 3D"
+  storeTagline: "Sua oficina de tecnologia e personalização 3D",
+  whatsapp: "5511999999999",
+  instagram: "https://instagram.com/bleeshop",
+  shopee: "https://shopee.com.br",
+  mercadolivre: "https://mercadolivre.com.br"
 };
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -86,7 +90,7 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     const unsubscribeSettings = onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        setSettings(data);
+        setSettings({ ...DEFAULT_SETTINGS, ...data });
       } else {
         set(settingsRef, DEFAULT_SETTINGS);
       }
