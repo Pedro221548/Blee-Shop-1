@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { User, ShieldCheck, Mail, Lock, ArrowRight, AlertCircle, Fingerprint } from 'lucide-react';
 import BeeLogo from '../components/BeeLogo';
@@ -16,6 +16,10 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Define para onde o usuário deve ir após o login (padrão é Home)
+  const from = (location.state as any)?.from || '/';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +35,7 @@ const LoginPage: React.FC = () => {
         return;
       }
       login(email, 'client');
-      navigate('/');
+      navigate(from, { replace: true });
       return;
     }
 
@@ -51,7 +55,7 @@ const LoginPage: React.FC = () => {
         return;
       }
       login(email, 'client');
-      navigate('/');
+      navigate(from, { replace: true });
     }
   };
 
@@ -67,11 +71,11 @@ const LoginPage: React.FC = () => {
             {mode === 'signup' ? 'Nova Conta' : mode === 'responsible' ? 'Painel de Gestão' : 'Acesse a Colmeia'}
           </h1>
           <p className="text-gray-400 font-medium text-sm">
-            {mode === 'signup' ? 'Inicie sua jornada conosco' : 'Sua vitrine de tecnologia favorita'}
+            {from !== '/' ? 'Acesse sua conta para concluir seu pedido' : 'Sua vitrine de tecnologia favorita'}
           </p>
         </div>
 
-        {/* Tab Selector - Simplified to Entrar | Gestão */}
+        {/* Tab Selector */}
         <div className="flex bg-gray-200/50 p-1.5 rounded-2xl mb-8">
           <button 
             type="button"

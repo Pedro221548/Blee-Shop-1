@@ -19,6 +19,10 @@ export interface Product {
   reviewsList?: Review[];
   mlUrl?: string;
   shopeeUrl?: string;
+  width?: number;   // em cm
+  height?: number;  // em cm
+  length?: number;  // em cm
+  weight?: number;  // em kg
 }
 
 export interface PortfolioItem {
@@ -27,6 +31,14 @@ export interface PortfolioItem {
   category: string;
   url: string;
   createdAt: string;
+}
+
+export interface ShippingOption {
+  id: string;
+  name: string;
+  price: number;
+  delivery_time: number;
+  company: string;
 }
 
 export interface CartItem extends Product {
@@ -54,6 +66,8 @@ export interface CartContextType {
   cartTotal: number;
   cartCount: number;
   notification: string | null;
+  selectedShipping: ShippingOption | null;
+  setSelectedShipping: (option: ShippingOption | null) => void;
 }
 
 export interface StoreSettings {

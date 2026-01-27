@@ -13,6 +13,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Mercado Pago SDK -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+
     <script>
         window.process = window.process || { env: {} };
     </script>
@@ -57,6 +61,11 @@
         }
         .animate-zoom-in {
           animation: zoomIn 0.2s ease-out forwards;
+        }
+
+        /* Hover Glow Effects */
+        .hover-glow:hover {
+          box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
         }
     </style>
 <script type="importmap">

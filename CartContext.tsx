@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, CartItem, CartContextType } from './types';
+import { Product, CartItem, CartContextType, ShippingOption } from './types';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -15,6 +15,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   });
 
   const [notification, setNotification] = useState<string | null>(null);
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
 
   useEffect(() => {
     localStorage.setItem('bleeshop-cart', JSON.stringify(cart));
@@ -51,6 +52,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const clearCart = () => {
     setCart([]);
+    setSelectedShipping(null);
     triggerNotification("Colmeia limpa.");
   };
 
@@ -59,7 +61,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   return (
     <CartContext.Provider value={{
-      cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, notification
+      cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, notification,
+      selectedShipping, setSelectedShipping
     }}>
       {children}
     </CartContext.Provider>
