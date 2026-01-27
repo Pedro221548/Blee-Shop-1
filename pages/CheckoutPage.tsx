@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Added ShieldCheck to imports to fix compilation error on line 262
 import { CreditCard, Truck, MapPin, CheckCircle2, Clock, Loader2, Wallet, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useCart } from '../CartContext';
 
@@ -32,7 +31,6 @@ const CheckoutPage: React.FC = () => {
   const buscarDadosCep = async (cep: string) => {
     setIsCalculating(true);
     try {
-      // 1. Busca Endereço via ViaCEP
       const cepResponse = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const cepData = await cepResponse.json();
 
@@ -42,14 +40,12 @@ const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // Preenche campos automaticamente
       setForm(prev => ({
         ...prev,
         endereco: `${cepData.logradouro}${cepData.bairro ? `, ${cepData.bairro}` : ''}`,
         cidade: `${cepData.localidade} - ${cepData.uf}`
       }));
 
-      // 2. Calcula Frete (Lógica Simulada baseada na região)
       await new Promise(resolve => setTimeout(resolve, 800));
       const isMetropolitan = cep.startsWith('0');
       const cost = isMetropolitan ? 14.90 : 28.50;
@@ -89,13 +85,16 @@ const CheckoutPage: React.FC = () => {
 
       const data = await response.json();
 
-      if (data.link) {
+      if (response.ok && data.link) {
         window.location.href = data.link;
       } else {
-        alert("Erro ao gerar link de pagamento.");
+        // Exibe o erro retornado pelo backend
+        console.error("Erro retornado pelo backend:", data);
+        alert(`Erro no Pagamento: ${data.error || "Ocorreu um erro inesperado."}`);
       }
     } catch (error) {
-      alert("Erro ao conectar com o servidor de pagamento.");
+      console.error("Erro na requisição:", error);
+      alert("Não foi possível conectar ao servidor de pagamento. Verifique sua conexão.");
     } finally {
       setIsProcessingPayment(false);
     }
@@ -121,7 +120,6 @@ const CheckoutPage: React.FC = () => {
 
       <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-start">
         <form onSubmit={finalizarCompra} className="lg:col-span-8 space-y-10">
-          {/* Entrega */}
           <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
             <div className="flex items-center space-x-3 mb-8">
               <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
@@ -151,7 +149,7 @@ const CheckoutPage: React.FC = () => {
 
               <div className="md:col-span-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Rua e Bairro</label>
-                <input required type="text" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="Carregando automaticamente..." />
+                <input required type="text" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="Digite seu CEP..." />
               </div>
 
               <div className="md:col-span-2">
@@ -176,7 +174,6 @@ const CheckoutPage: React.FC = () => {
             )}
           </section>
 
-          {/* Pagamento - Fixado em Mercado Pago conforme solicitado */}
           <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
             <div className="flex items-center space-x-3 mb-8">
               <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
@@ -197,9 +194,6 @@ const CheckoutPage: React.FC = () => {
               </div>
               <CheckCircle2 size={28} className="text-amber-500" />
             </div>
-            <p className="mt-6 text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-              Você será redirecionado para o ambiente seguro do Mercado Pago
-            </p>
           </section>
 
           <button type="submit" disabled={!shippingInfo || isProcessingPayment} className="lg:hidden w-full bg-amber-400 text-gray-900 py-6 rounded-2xl font-black text-lg shadow-2xl shadow-amber-200/50 disabled:opacity-50 active:scale-95 transition-all">
@@ -207,7 +201,6 @@ const CheckoutPage: React.FC = () => {
           </button>
         </form>
 
-        {/* Resumo */}
         <div className="lg:col-span-4 mt-12 lg:mt-0">
           <div className="bg-gray-900 text-white rounded-[3rem] p-8 md:p-10 sticky top-24 shadow-2xl shadow-gray-200">
             <h3 className="text-xl font-black mb-10 uppercase tracking-widest text-amber-400 border-b border-gray-800 pb-6">Meu Pedido</h3>
@@ -260,7 +253,6 @@ const CheckoutPage: React.FC = () => {
               )}
             </button>
             <div className="flex items-center justify-center space-x-2 mt-8 opacity-40 grayscale">
-               {/* Fixed missing ShieldCheck component by importing it from lucide-react */}
                <ShieldCheck size={14} />
                <p className="text-[9px] font-black uppercase tracking-[0.2em]">Compra 100% Protegida</p>
             </div>
