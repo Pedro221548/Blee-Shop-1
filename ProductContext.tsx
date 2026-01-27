@@ -27,6 +27,8 @@ const DEFAULT_SETTINGS: StoreSettings = {
   storeTagline: "Sua oficina de tecnologia e personalização 3D",
   whatsapp: "5511999999999",
   instagram: "https://instagram.com/bleeshop",
+  youtube: "https://youtube.com/@bleeshop",
+  tiktok: "https://tiktok.com/@bleeshop",
   shopee: "https://shopee.com.br",
   mercadolivre: "https://mercadolivre.com.br"
 };

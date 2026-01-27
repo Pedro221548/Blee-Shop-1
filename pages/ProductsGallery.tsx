@@ -5,7 +5,7 @@ import { Instagram, Youtube, Camera, Zap, ZoomIn, X, Loader2 } from 'lucide-reac
 import { useProducts } from '../ProductContext';
 
 const ProductsGallery: React.FC = () => {
-  const { portfolioItems } = useProducts();
+  const { portfolioItems, settings } = useProducts();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
@@ -97,33 +97,39 @@ const ProductsGallery: React.FC = () => {
             <p className="text-gray-400 font-medium mb-12">Fique por dentro das novidades, bastidores e sorteios exclusivos nas nossas redes.</p>
             
             <div className="flex flex-wrap justify-center gap-6">
-              <a 
-                href="https://instagram.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="bg-white/10 hover:bg-amber-400 hover:text-gray-900 p-5 rounded-3xl transition-all group"
-              >
-                <Instagram size={28} />
-                <span className="block mt-2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Instagram</span>
-              </a>
-              <a 
-                href="https://youtube.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="bg-white/10 hover:bg-red-500 p-5 rounded-3xl transition-all group"
-              >
-                <Youtube size={28} />
-                <span className="block mt-2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">YouTube</span>
-              </a>
-              <a 
-                href="https://tiktok.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="bg-white/10 hover:bg-black p-5 rounded-3xl transition-all group"
-              >
-                <div className="w-7 h-7 flex items-center justify-center font-black">TK</div>
-                <span className="block mt-2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">TikTok</span>
-              </a>
+              {settings.instagram && (
+                <a 
+                  href={settings.instagram} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white/10 hover:bg-amber-400 hover:text-gray-900 p-6 rounded-[2rem] transition-all group flex flex-col items-center justify-center min-w-[100px]"
+                >
+                  <Instagram size={28} />
+                  <span className="block mt-2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Instagram</span>
+                </a>
+              )}
+              {settings.youtube && (
+                <a 
+                  href={settings.youtube} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white/10 hover:bg-red-600 p-6 rounded-[2rem] transition-all group flex flex-col items-center justify-center min-w-[100px]"
+                >
+                  <Youtube size={28} />
+                  <span className="block mt-2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">YouTube</span>
+                </a>
+              )}
+              {settings.tiktok && (
+                <a 
+                  href={settings.tiktok} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white/10 hover:bg-white hover:text-black p-6 rounded-[2rem] transition-all group flex flex-col items-center justify-center min-w-[100px]"
+                >
+                  <div className="w-7 h-7 flex items-center justify-center font-black text-sm">TK</div>
+                  <span className="block mt-2 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">TikTok</span>
+                </a>
+              )}
             </div>
           </div>
         </div>

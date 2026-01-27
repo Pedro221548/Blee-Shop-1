@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useProducts } from '../ProductContext';
 import { useAuth } from '../AuthContext';
-import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle, Share2, Globe, Instagram as InstagramIcon } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle, Share2, Globe, Instagram as InstagramIcon, Youtube as YoutubeIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CustomOrder, PortfolioItem } from '../types';
 
@@ -272,6 +272,30 @@ const AdminPage: React.FC = () => {
                     placeholder="https://instagram.com/seuusuario"
                     value={settings.instagram || ''}
                     onChange={(e) => updateSettings({...settings, instagram: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <YoutubeIcon size={14} className="text-red-600" /> Link YouTube
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="https://youtube.com/@seucanal"
+                    value={settings.youtube || ''}
+                    onChange={(e) => updateSettings({...settings, youtube: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <span className="font-black text-[10px]">TK</span> Link TikTok
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="https://tiktok.com/@seuusuario"
+                    value={settings.tiktok || ''}
+                    onChange={(e) => updateSettings({...settings, tiktok: e.target.value})}
                     className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all font-bold"
                   />
                 </div>

@@ -65,6 +65,8 @@ export interface StoreSettings {
   storeTagline: string;
   whatsapp?: string;
   instagram?: string;
+  youtube?: string;
+  tiktok?: string;
   shopee?: string;
   mercadolivre?: string;
 }
