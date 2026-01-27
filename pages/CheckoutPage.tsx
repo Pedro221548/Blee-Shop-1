@@ -1,23 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, CheckCircle2, Clock, Loader2, Wallet, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { CreditCard, Truck, MapPin, CheckCircle2, Loader2, Wallet, ArrowLeft, ShieldCheck, Lock, User } from 'lucide-react';
 import { useCart } from '../CartContext';
+import { useAuth } from '../AuthContext';
 
 const CheckoutPage: React.FC = () => {
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  
   const [isCalculating, setIsCalculating] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [shippingInfo, setShippingInfo] = useState<{ cost: number; days: string } | null>(null);
   
   const [form, setForm] = useState({
-    nome: '',
-    email: '',
-    endereco: '',
-    cidade: '',
+    nome: user?.name || '',
+    email: user?.email || '',
     cep: '',
-    payment: 'mercadopago'
+    endereco: '',
+    numero: '',
+    complemento: '',
+    cidade: '',
   });
 
   // Gatilho automático para busca de CEP
@@ -46,8 +50,9 @@ const CheckoutPage: React.FC = () => {
         cidade: `${cepData.localidade} - ${cepData.uf}`
       }));
 
+      // Simulação de frete baseada na região
       await new Promise(resolve => setTimeout(resolve, 800));
-      const isMetropolitan = cep.startsWith('0');
+      const isMetropolitan = cep.startsWith('0') || cep.startsWith('2');
       const cost = isMetropolitan ? 14.90 : 28.50;
       const days = isMetropolitan ? "2 a 4 dias úteis" : "5 a 10 dias úteis";
       setShippingInfo({ cost, days });
@@ -63,8 +68,14 @@ const CheckoutPage: React.FC = () => {
   const finalizarCompra = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
-    if (!shippingInfo) {
-      alert("Por favor, informe um CEP válido para calcular o frete.");
+    if (!isAuthenticated) {
+      alert("Você precisa estar logado para finalizar a compra.");
+      navigate('/login');
+      return;
+    }
+
+    if (!shippingInfo || !form.numero) {
+      alert("Por favor, preencha todos os campos obrigatórios (CEP e Número).");
       return;
     }
 
@@ -78,7 +89,14 @@ const CheckoutPage: React.FC = () => {
           shipping: shippingInfo,
           customer: {
             name: form.nome,
-            email: form.email
+            email: form.email,
+            address: {
+              street: form.endereco,
+              number: form.numero,
+              complement: form.complemento,
+              zip_code: form.cep,
+              city: form.cidade
+            }
           }
         })
       });
@@ -88,13 +106,10 @@ const CheckoutPage: React.FC = () => {
       if (response.ok && data.link) {
         window.location.href = data.link;
       } else {
-        // Exibe o erro retornado pelo backend
-        console.error("Erro retornado pelo backend:", data);
         alert(`Erro no Pagamento: ${data.error || "Ocorreu um erro inesperado."}`);
       }
     } catch (error) {
-      console.error("Erro na requisição:", error);
-      alert("Não foi possível conectar ao servidor de pagamento. Verifique sua conexão.");
+      alert("Não foi possível conectar ao servidor de pagamento.");
     } finally {
       setIsProcessingPayment(false);
     }
@@ -118,8 +133,27 @@ const CheckoutPage: React.FC = () => {
         <div className="w-20"></div>
       </div>
 
+      {!isAuthenticated && (
+        <div className="mb-10 bg-amber-50 border border-amber-200 p-6 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="bg-amber-100 p-3 rounded-2xl text-amber-600">
+              <Lock size={24} />
+            </div>
+            <div>
+              <p className="font-black text-gray-900 text-sm uppercase">Login Necessário</p>
+              <p className="text-xs text-gray-500 font-medium">Você precisa acessar sua conta para finalizar o pedido.</p>
+            </div>
+          </div>
+          <button onClick={() => navigate('/login')} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-amber-500 transition-all flex items-center space-x-2">
+            <User size={16} />
+            <span>Fazer Login</span>
+          </button>
+        </div>
+      )}
+
       <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-start">
-        <form onSubmit={finalizarCompra} className="lg:col-span-8 space-y-10">
+        <form onSubmit={finalizarCompra} className={`lg:col-span-8 space-y-10 ${!isAuthenticated ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+          {/* Entrega */}
           <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
             <div className="flex items-center space-x-3 mb-8">
               <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
@@ -128,33 +162,38 @@ const CheckoutPage: React.FC = () => {
               <h2 className="text-xl font-black text-gray-900 tracking-tight">Endereço de Entrega</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="md:col-span-2">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Nome Completo</label>
-                <input required type="text" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="Seu nome completo" />
+                <input required type="text" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Seu nome" />
               </div>
               
-              <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">CEP (Busca Automática)</label>
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">CEP</label>
                 <div className="relative">
-                  <input required type="text" maxLength={9} value={form.cep} onChange={e => setForm({...form, cep: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-black" placeholder="00000-000" />
+                  <input required type="text" maxLength={9} value={form.cep} onChange={e => setForm({...form, cep: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-2 focus:ring-amber-500 outline-none" placeholder="00000-000" />
                   {isCalculating && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-amber-500" size={18} />}
                 </div>
               </div>
 
-              <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">E-mail para Rastreio</label>
-                <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="seu@email.com" />
+              <div className="md:col-span-4">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Endereço (Rua e Bairro)</label>
+                <input required type="text" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none" placeholder="Informe o CEP acima..." />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Rua e Bairro</label>
-                <input required type="text" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold" placeholder="Digite seu CEP..." />
+              <div className="md:col-span-1">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Número</label>
+                <input required type="text" value={form.numero} onChange={e => setForm({...form, numero: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none" placeholder="123" />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Complemento / Referência</label>
+                <input type="text" value={form.complemento} onChange={e => setForm({...form, complemento: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Apto, Bloco, Próximo a..." />
+              </div>
+
+              <div className="md:col-span-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Cidade e UF</label>
-                <input required type="text" value={form.cidade} readOnly className="w-full bg-gray-100 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-gray-500 outline-none" placeholder="Carregando..." />
+                <input required type="text" value={form.cidade} readOnly className="w-full bg-gray-100 border border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-gray-500 outline-none cursor-not-allowed" placeholder="Cidade - UF" />
               </div>
             </div>
 
@@ -165,7 +204,7 @@ const CheckoutPage: React.FC = () => {
                     <Truck size={24} />
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest block">Frete Calculado</span>
+                    <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest block">Envio Blee</span>
                     <span className="text-sm font-bold text-amber-800">{shippingInfo.days}</span>
                   </div>
                 </div>
@@ -174,6 +213,7 @@ const CheckoutPage: React.FC = () => {
             )}
           </section>
 
+          {/* Pagamento */}
           <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
             <div className="flex items-center space-x-3 mb-8">
               <div className="bg-amber-100 p-2.5 rounded-2xl text-amber-600">
@@ -189,7 +229,7 @@ const CheckoutPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-black text-gray-900 text-sm">Mercado Pago Checkout Pro</p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Cartão, Pix, Boleto ou Saldo</p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Cartão, Pix ou Saldo</p>
                 </div>
               </div>
               <CheckCircle2 size={28} className="text-amber-500" />
@@ -197,10 +237,11 @@ const CheckoutPage: React.FC = () => {
           </section>
 
           <button type="submit" disabled={!shippingInfo || isProcessingPayment} className="lg:hidden w-full bg-amber-400 text-gray-900 py-6 rounded-2xl font-black text-lg shadow-2xl shadow-amber-200/50 disabled:opacity-50 active:scale-95 transition-all">
-            {isProcessingPayment ? <Loader2 className="animate-spin mx-auto" /> : "FINALIZAR E PAGAR"}
+            {isProcessingPayment ? <Loader2 className="animate-spin mx-auto" /> : "FINALIZAR PEDIDO"}
           </button>
         </form>
 
+        {/* Resumo */}
         <div className="lg:col-span-4 mt-12 lg:mt-0">
           <div className="bg-gray-900 text-white rounded-[3rem] p-8 md:p-10 sticky top-24 shadow-2xl shadow-gray-200">
             <h3 className="text-xl font-black mb-10 uppercase tracking-widest text-amber-400 border-b border-gray-800 pb-6">Meu Pedido</h3>
@@ -225,11 +266,11 @@ const CheckoutPage: React.FC = () => {
 
             <div className="border-t border-gray-800 pt-8 space-y-5 mb-10">
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                <span>Itens</span>
+                <span>Produtos</span>
                 <span>R$ {cartTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                <span>Frete</span>
+                <span>Entrega</span>
                 <span>{shippingInfo ? `R$ ${shippingInfo.cost.toFixed(2)}` : '--'}</span>
               </div>
               <div className="flex justify-between text-3xl font-black text-white pt-4 border-t border-gray-800">
@@ -240,8 +281,8 @@ const CheckoutPage: React.FC = () => {
 
             <button 
               onClick={() => finalizarCompra()}
-              disabled={!shippingInfo || isProcessingPayment}
-              className="w-full py-6 rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center space-x-3 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed bg-amber-400 hover:bg-white text-gray-900 active:scale-95"
+              disabled={!shippingInfo || isProcessingPayment || !isAuthenticated}
+              className="w-full py-6 rounded-2xl font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center space-x-3 shadow-xl disabled:opacity-30 disabled:cursor-not-allowed bg-amber-400 hover:bg-white text-gray-900 active:scale-95"
             >
               {isProcessingPayment ? (
                 <Loader2 className="animate-spin" size={24} />
