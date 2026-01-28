@@ -14,7 +14,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
+        // Prevenir flash do tema claro
+        (function() {
+          const theme = localStorage.getItem('blee-theme');
+          if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        })();
         window.process = window.process || { env: {} };
+        
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              colors: {
+                dark: {
+                  bg: '#0a0c10',
+                  surface: '#161b22',
+                  border: '#1f2937'
+                }
+              }
+            }
+          }
+        }
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -22,6 +46,9 @@
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+        }
+        .dark .glass-effect {
+            background: rgba(15, 17, 21, 0.7);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
@@ -77,7 +104,7 @@
 }
 </script>
 </head>
-<body class="bg-gray-50 text-gray-900 overflow-x-hidden">
+<body class="bg-gray-50 dark:bg-[#0a0c10] text-gray-900 dark:text-gray-100 overflow-x-hidden transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
 </body>
