@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, Eye, X, Maximize, ShoppingBag, ArrowRight, CheckCircle2, Info, RotateCw, Move, Sparkles, Loader2, Download, Cpu, Zap, Lightbulb } from 'lucide-react';
+import { Camera, Upload, X, Maximize, ShoppingBag, ArrowRight, CheckCircle2, RotateCw, Move, Sparkles, Loader2, Download, Cpu, Zap } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { useProducts } from '../ProductContext';
 import { Product } from '../types';
@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { generateAIComposite } from '../geminiService';
 
 const SimulatorPage: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { products } = useProducts();
   const navigate = useNavigate();
   const [bgImage, setBgImage] = useState<string | null>(null);
@@ -109,7 +109,6 @@ const SimulatorPage: React.FC = () => {
 
           <div className="max-w-6xl mx-auto px-4 relative z-10">
             <div className="bg-gray-900 rounded-[3rem] p-8 md:p-20 text-center shadow-2xl shadow-gray-200 border border-gray-800 relative overflow-hidden">
-               {/* Decorações Flutuantes */}
                <div className="absolute top-10 left-10 text-amber-400/20 animate-pulse hidden md:block"><Cpu size={48} /></div>
                <div className="absolute bottom-10 right-10 text-amber-400/20 animate-bounce-slow hidden md:block"><Sparkles size={48} /></div>
 
@@ -126,18 +125,20 @@ const SimulatorPage: React.FC = () => {
                  Nossa tecnologia de <span className="text-white font-black underline decoration-amber-400 underline-offset-4">Realismo Generativo</span> coloca seus produtos favoritos diretamente na sua sala com sombras e luzes reais.
                </p>
 
-               <button 
-                 onClick={() => navigate('/login')}
-                 className="bg-white text-gray-900 px-12 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:bg-amber-400 transition-all active:scale-95 flex items-center justify-center space-x-4 mx-auto group"
-               >
-                 <span>Acesse para Começar</span>
-                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
-               </button>
+               <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <button 
+                    onClick={() => navigate('/login')}
+                    className="bg-white text-gray-900 px-12 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:bg-amber-400 transition-all active:scale-95 flex items-center justify-center space-x-4 group"
+                  >
+                    <span>Acesse para Começar</span>
+                    <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+               </div>
             </div>
           </div>
         </section>
 
-        {/* Infográfico de Passos */}
+        {/* steps section */}
         <section className="max-w-7xl mx-auto px-4 py-12">
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-white p-10 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
@@ -174,17 +175,6 @@ const SimulatorPage: React.FC = () => {
               </div>
            </div>
         </section>
-
-        {/* Dica do Especialista */}
-        <section className="max-w-4xl mx-auto px-4 mt-12">
-          <div className="bg-amber-400 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-amber-100 border border-amber-300">
-             <div className="bg-white/30 p-4 rounded-2xl shrink-0"><Lightbulb size={32} className="text-white" /></div>
-             <p className="text-sm md:text-base font-black text-gray-900 leading-tight text-center md:text-left">
-               "Nossa IA analisa texturas e luzes. Quanto melhor for a foto, mais impressionante será o resultado final da simulação!" 
-               <span className="block text-[10px] mt-2 opacity-60">— George, Fundador da Blee Shop</span>
-             </p>
-          </div>
-        </section>
       </div>
     );
   }
@@ -197,7 +187,7 @@ const SimulatorPage: React.FC = () => {
              <div className="p-4 md:p-5 border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur sticky top-0 z-10">
                <div className="flex items-center space-x-3">
                  <div className="bg-amber-400 p-2 rounded-xl text-white shadow-sm shrink-0">
-                   <Eye size={18} />
+                   <Maximize size={18} />
                  </div>
                  <h2 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900 truncate max-w-[120px] md:max-w-none">
                    {aiGeneratedImage ? 'Render Realista' : 'Preview BeeView'}
@@ -207,7 +197,7 @@ const SimulatorPage: React.FC = () => {
                  {aiGeneratedImage && (
                    <button 
                      onClick={() => setAiGeneratedImage(null)} 
-                     className="flex items-center space-x-2 px-3 py-2 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black hover:bg-amber-100 transition-colors whitespace-nowrap"
+                     className="flex items-center space-x-2 px-3 py-2 bg-amber-50 text-amber-600 rounded-xl text-[10px] font-black hover:bg-amber-100 transition-all whitespace-nowrap"
                    >
                      <RotateCw size={14} />
                      <span className="hidden sm:inline uppercase">Ajustar Manual</span>
@@ -217,7 +207,7 @@ const SimulatorPage: React.FC = () => {
                  {bgImage && (
                    <button 
                     onClick={() => {setBgImage(null); setSelectedProduct(null); setAiGeneratedImage(null);}} 
-                    className="flex items-center space-x-2 px-3 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-black hover:bg-red-100 transition-colors uppercase tracking-widest"
+                    className="flex items-center space-x-2 px-3 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-black hover:bg-red-100 transition-all uppercase tracking-widest"
                    >
                      <X size={14} />
                      <span>Limpar</span>
@@ -283,14 +273,16 @@ const SimulatorPage: React.FC = () => {
                  </>
                ) : (
                  <div className="text-center p-8">
-                   <div className="bg-white w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-xl">
+                   <div className="bg-white w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-xl relative">
                      <Camera size={32} className="text-amber-500" />
                    </div>
                    <h3 className="text-xl font-black text-gray-900 mb-4 tracking-tight">Foto do seu espaço</h3>
-                   <button onClick={() => fileInputRef.current?.click()} className="bg-amber-400 text-gray-900 px-8 py-4 rounded-xl font-black flex items-center space-x-2 mx-auto shadow-lg hover:bg-amber-500 transition-all active:scale-95">
-                     <Upload size={18} />
-                     <span className="text-xs uppercase">Subir Foto</span>
-                   </button>
+                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                      <button onClick={() => fileInputRef.current?.click()} className="bg-amber-400 text-gray-900 px-8 py-4 rounded-xl font-black flex items-center space-x-2 shadow-lg hover:bg-amber-500 transition-all active:scale-95">
+                        <Upload size={18} />
+                        <span className="text-xs uppercase">Subir Foto</span>
+                      </button>
+                   </div>
                    <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
                  </div>
                )}

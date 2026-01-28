@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useProducts } from '../ProductContext';
 import { useAuth } from '../AuthContext';
-import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, Eye, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle, Share2, Globe, Instagram as InstagramIcon, Youtube as YoutubeIcon } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Image as ImageIcon, CheckCircle, Layout, ShoppingBag, Settings, X, AlertCircle, MessageSquare, Box, Coffee, Clock, CheckCircle2, Phone, ZoomIn, Camera, Edit3, Save, RotateCcw, AlertTriangle, Share2, Globe, Instagram as InstagramIcon, Youtube as YoutubeIcon, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CustomOrder, PortfolioItem } from '../types';
 
@@ -185,7 +185,7 @@ const AdminPage: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Link to="/" className="flex items-center space-x-2 px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-200 transition-all">
-            <Eye size={16} />
+            <ExternalLink size={16} />
             <span>Ver Site</span>
           </Link>
           <button 

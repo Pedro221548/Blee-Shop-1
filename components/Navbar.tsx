@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box, Eye, Phone } from 'lucide-react';
+import { User, Menu, LogOut, Settings, ChevronDown, ShoppingCart, Layout, Search, X, ArrowRight, Home, Image, Box, Phone, Zap } from 'lucide-react';
 import BeeLogo from './BeeLogo';
 import { useAuth } from '../AuthContext';
 import { useCart } from '../CartContext';
@@ -79,11 +79,10 @@ const Navbar: React.FC = () => {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Início</Link>
-            <Link to="/simulador" className="text-gray-600 hover:text-amber-600 font-bold transition-colors flex items-center gap-1">
-              <Eye size={16} className="text-amber-500" />
-              <span>Simulador</span>
+            <Link to="/simulador" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">
+              Simulador
             </Link>
-            <Link to="/dashboard" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Encomendas 3D</Link>
+            <Link to="/dashboard" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Encomendar</Link>
             <Link to="/produtos" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Portifólio</Link>
             <Link to="/contato" className="text-gray-600 hover:text-amber-600 font-bold transition-colors">Contato</Link>
             {isResponsible && (
@@ -209,7 +208,7 @@ const Navbar: React.FC = () => {
                 onClick={() => navigateAndClose('/simulador')}
                 className="w-full flex items-center space-x-4 p-4 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
               >
-                <Eye size={20} className="text-amber-500" />
+                <Zap size={20} className="text-amber-500" />
                 <span className="text-sm">Simulador BeeView</span>
               </button>
               
@@ -218,7 +217,7 @@ const Navbar: React.FC = () => {
                 className="w-full flex items-center space-x-4 p-4 rounded-2xl text-gray-600 font-bold hover:bg-gray-50 transition-all text-left"
               >
                 <Box size={20} className="text-amber-500" />
-                <span className="text-sm">Encomendas 3D</span>
+                <span className="text-sm">Encomendar</span>
               </button>
 
               <button 
